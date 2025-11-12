@@ -5,14 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Conferencia;
 use App\Models\Grupo;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-// --- ASEGÚRATE QUE ESTAS LÍNEAS ESTÉN EXACTAMENTE ASÍ ---
-use Endroid\QrCode\Builder\Builder; // Importa el Builder
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\Writer\PngWriter; // Necesitamos el escritor
+use Illuminate\Support\Carbon;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Throwable;
+use BaconQrCode\Renderer\Image\Png;
+use BaconQrCode\Writer;
 
 class QrCodeController extends Controller
 {
@@ -21,51 +19,53 @@ class QrCodeController extends Controller
         Log::info("Solicitud de QR para Conferencia ID: {$conferencia->ID_CONFERENCIA}, Grupo ID: {$grupo->ID_GRUPO}");
 
         if (!$grupo) {
-             Log::warning("Intento de generar QR para grupo no existente: {$grupo}");
-             return response()->json(['message' => 'Grupo no encontrado.'], 404);
+            return response()->json(['message' => 'Grupo no encontrado.'], 404);
         }
 
         $qrCodeInternalData = [
             'conference_id' => $conferencia->ID_CONFERENCIA,
+            'group_id'      => $grupo->ID_GRUPO,
         ];
-        $qrDataString = json_encode($qrCodeInternalData);
 
+        $qrDataString = json_encode($qrCodeInternalData);
         $formattedDate = 'N/A';
-        if ($conferencia->FECHA_HORA) {
-            try {
+
+        try {
+            if ($conferencia->FECHA_HORA) {
                 $formattedDate = Carbon::parse($conferencia->FECHA_HORA)->format('d-m-Y H:i');
-            } catch (\Exception $e) {
-                Log::error("Error al formatear FECHA_HORA en QrCodeController para Conferencia ID {$conferencia->ID_CONFERENCIA}: " . $e->getMessage());
             }
+        } catch (\Exception $e) {
+            Log::error("Error al formatear FECHA_HORA: " . $e->getMessage());
         }
+
         $displayInfo = [
-            'conference_name' => $conferencia->NOMBRE_CONFERENCIA,
-            'group_name' => $grupo->NOMBRE,
-            'date' => $formattedDate,
+            'conference_name' => $conferencia->NOMBRE_CONFERENCIA ?? 'Conferencia Sin Nombre',
+            'group_name'      => $grupo->NOMBRE ?? 'Grupo Sin Nombre',
+            'date'            => $formattedDate,
         ];
 
         try {
-            // Código usando el Builder
-            $result = Builder::create()
-                ->writer(new PngWriter())
-                ->writerOptions([])
-                ->data($qrDataString)
-                ->encoding(new Encoding('UTF-8'))
-                ->errorCorrectionLevel(ErrorCorrectionLevel::High)
-                ->size(300)
-                ->margin(10)
-                ->build();
 
-            $qrCodeBase64 = $result->getDataUri();
+    $qrPng = QrCode::format('png')
+        ->size(300)
+        ->margin(10)
+        ->errorCorrection('H')
+        ->generate($qrDataString);
 
-        } catch (\Exception $e) {
-            Log::error("Error al generar QR para Conferencia ID {$conferencia->ID_CONFERENCIA}: " . $e->getMessage());
-            return response()->json(['message' => 'Error interno al generar el código QR: ' . $e->getMessage()], 500);
-        }
+    $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrPng);
+
+} catch (\Throwable $e) {
+
+    \Log::error("Error FATAL al generar QR:");
+    \Log::error($e);
+
+    return response()->json(['message' => 'Error interno al generar QR'], 500);
+    
+}
 
         return response()->json([
-            'qr_code_base64' => $qrCodeBase64,
-            'display_info' => $displayInfo,
+            'qrCodeBased64' => $qrCodeBase64,
+            'displayInfo'   => $displayInfo,
         ]);
     }
 }

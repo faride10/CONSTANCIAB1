@@ -16,7 +16,6 @@ return new class extends Migration
         });
     }
 
-   
     public function down(): void
     {
         Schema::table('ASISTENCIA', function (Blueprint $table) {

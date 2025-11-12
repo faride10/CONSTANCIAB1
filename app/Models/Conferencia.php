@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;   
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,20 +16,24 @@ class Conferencia extends Model
     protected $fillable = [
         'NOMBRE_CONFERENCIA',
         'TEMA',
-        'FECHA_HORA',   
+        'FECHA_HORA',
         'LUGAR',
         'NUM_PARTICIPANTES',
         'ID_PONENTE'
     ];
 
-    protected $casts = [
-        'FECHA_HORA' => 'datetime', 
-        'NUM_PARTICIPANTES' => 'integer',
-    ];
+    public function grupos()
+    {
+        return $this->belongsToMany(
+            Grupo::class,
+            'conferencia_grupo',        
+            'ID_CONFERENCIA',       
+            'ID_GRUPO'      
+        );
+    }
 
     public function ponente()
     {
-
         return $this->belongsTo(Ponente::class, 'ID_PONENTE', 'ID_PONENTE');
     }
 }

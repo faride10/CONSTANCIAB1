@@ -1,15 +1,12 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Grupo extends Model
 {
     use HasFactory;
-
-    protected $table = 'GRUPO';
+    protected $table = 'grupo';
     protected $primaryKey = 'ID_GRUPO';
     public $timestamps = false;
 
@@ -21,7 +18,6 @@ class Grupo extends Model
 
     public function alumnos()
     {
-        
         return $this->hasMany(Alumno::class, 'ID_GRUPO', 'ID_GRUPO');
     }
 
@@ -29,4 +25,14 @@ class Grupo extends Model
     {
         return $this->belongsTo(Docente::class, 'ID_DOCENTE', 'ID_DOCENTE');
     }
+
+    public function conferencias()
+{
+    return $this->belongsToMany(
+        Conferencia::class,     
+        'conferencia_grupo',    
+        'ID_GRUPO',     
+        'ID_CONFERENCIA'    
+    );
+}
 }

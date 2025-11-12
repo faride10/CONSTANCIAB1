@@ -1,27 +1,34 @@
 <?php
-
 namespace App\Http\Controllers\API;
-
 use App\Http\Controllers\Controller;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log; 
 
 class GrupoController extends Controller
 {
+
     public function index()
     {
-        return Grupo::with(['docente', 'alumnos'])->get();
+        return Grupo::with('docente')->get();
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+       
+        $validatedData = $request->validate([
             'NOMBRE' => 'required|string|max:150',
             'CARRERA' => 'nullable|string|max:150',
-            'ID_DOCENTE' => 'nullable|unique:GRUPO,ID_DOCENTE|exists:DOCENTE,ID_DOCENTE'
+            'ID_DOCENTE' => 'nullable|exists:docente,ID_DOCENTE' 
         ]);
-        $grupo = Grupo::create($request->all());
-        return response()->json($grupo, 201);
+        
+        try {
+            $grupo = Grupo::create($validatedData);
+            return response()->json($grupo->load('docente'), 201);
+        } catch (\Exception $e) {
+            Log::error("Error al crear grupo: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al guardar el grupo.'], 500);
+        }
     }
 
     public function show(Grupo $grupo)
@@ -31,18 +38,29 @@ class GrupoController extends Controller
 
     public function update(Request $request, Grupo $grupo)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'NOMBRE' => 'sometimes|required|string|max:150',
             'CARRERA' => 'sometimes|nullable|string|max:150',
-            'ID_DOCENTE' => 'sometimes|nullable|exists:DOCENTE,ID_DOCENTE|unique:GRUPO,ID_DOCENTE,' . $grupo->ID_GRUPO . ',ID_GRUPO'
+            'ID_DOCENTE' => 'sometimes|nullable|exists:docente,ID_DOCENTE'
         ]);
-        $grupo->update($request->all());
-        return response()->json($grupo);
+        
+        try {
+            $grupo->update($validatedData);
+            return response()->json($grupo->load('docente'));
+        } catch (\Exception $e) {
+            Log::error("Error al actualizar grupo: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al actualizar el grupo.'], 500);
+        }
     }
 
     public function destroy(Grupo $grupo)
     {
-        $grupo->delete();
-        return response()->json(null, 204);
+        try {
+            $grupo->delete();
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+             Log::error("Error al eliminar grupo: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al eliminar el grupo.'], 500);
+        }
     }
 }

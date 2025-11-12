@@ -8,16 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Docente extends Model
 {
     use HasFactory;
-
-    protected $table = 'DOCENTE';
+    protected $table = 'docente';
     protected $primaryKey = 'ID_DOCENTE';
-    public $timestamps = true;
-
+    public $timestamps = false;
     protected $fillable = [
         'NOMBRE',
         'RFC',
         'CORREO',
-        'TELEFONO',
+        'TELEFONO'
     ];
 
     public function grupo()
@@ -25,7 +23,7 @@ class Docente extends Model
         return $this->hasOne(Grupo::class, 'ID_DOCENTE', 'ID_DOCENTE');
     }
 
-    public function usuario() 
+    public function usuario()
     {
         return $this->hasOne(Usuario::class, 'ID_DOCENTE', 'ID_DOCENTE');
     }

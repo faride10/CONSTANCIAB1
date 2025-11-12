@@ -6,16 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
+   
     public function up(): void {
-    Schema::create('DOCENTE', function (Blueprint $table) {
-        $table->id('ID_DOCENTE');
-        $table->string('NOMBRE', 200);
-        $table->string('CORREO', 200)->unique()->nullable();
-        $table->string('TELEFONO', 30)->nullable();
-        $table->timestamps(); // Esto crea CREATED_AT y UPDATED_AT
-    });
-}
+        Schema::create('docente', function (Blueprint $table) {
+            $table->id('ID_DOCENTE');
+            $table->string('NOMBRE', 200);
+            $table->string('RFC', 13)->unique()->nullable(); 
+            $table->string('CORREO', 200)->unique()->nullable();
+            $table->string('TELEFONO', 30)->nullable();
+        });
+    }
 
     public function down(): void
     {

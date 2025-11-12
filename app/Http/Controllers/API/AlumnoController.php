@@ -5,60 +5,101 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Alumno;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+use App\Imports\AlumnosImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AlumnoController extends Controller
 {
     public function index()
     {
-        
-        return response()->json(Alumno::with('grupo')->get());
+        return Alumno::with('grupo')->get();
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'NUM_CONTROL' => 'required|string|max:30|unique:ALUMNOS,NUM_CONTROL',
+        $validatedData = $request->validate([
+            'NUM_CONTROL' => 'required|string|max:30|unique:alumno,NUM_CONTROL',
             'NOMBRE' => 'required|string|max:250',
-            'CORREO_INSTITUCIONAL' => 'required|email|max:200|unique:ALUMNOS,CORREO_INSTITUCIONAL',
-            'ID_GRUPO' => 'nullable|integer|exists:GRUPO,ID_GRUPO',
+            'CORREO_INSTITUCIONAL' => 'required|string|email|max:200|unique:alumno,CORREO_INSTITUCIONAL',
+            'ID_GRUPO' => 'nullable|exists:grupo,ID_GRUPO'
         ]);
 
-        $alumno = Alumno::create($request->all());
-
-        return response()->json($alumno, 201);
+        try {
+            $alumno = Alumno::create($validatedData);
+            return response()->json($alumno->load('grupo'), 201);
+        } catch (\Exception $e) {
+            Log::error("Error al crear alumno: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al guardar el alumno.'], 500);
+        }
     }
 
-    public function show(Alumno $alumno)
+    public function show($numControl)
     {
-    
-        return response()->json($alumno->load('grupo', 'asistencias'));
+        $alumno = Alumno::find($numControl);
+        if (!$alumno) {
+            return response()->json(['message' => 'Alumno no encontrado'], 404);
+        }
+        return $alumno->load('grupo');
     }
 
-    public function update(Request $request, Alumno $alumno)
+    public function update(Request $request, $numControl)
     {
-        $request->validate([
+        $alumno = Alumno::find($numControl);
+        if (!$alumno) {
+            return response()->json(['message' => 'Alumno no encontrado'], 404);
+        }
+
+        $validatedData = $request->validate([
+            'NUM_CONTROL' => 'sometimes|required|string|max:30|unique:alumno,NUM_CONTROL,' . $numControl . ',NUM_CONTROL',
             'NOMBRE' => 'sometimes|required|string|max:250',
-            'CORREO_INSTITUCIONAL' => [
-                'sometimes',
-                'required',
-                'email',
-                'max:200',
-        
-                Rule::unique('ALUMNOS', 'CORREO_INSTITUCIONAL')->ignore($alumno->NUM_CONTROL, 'NUM_CONTROL'),
-            ],
-            'ID_GRUPO' => 'sometimes|nullable|integer|exists:GRUPO,ID_GRUPO',
+            'CORREO_INSTITUCIONAL' => 'sometimes|required|string|email|max:200|unique:alumno,CORREO_INSTITUCIONAL,' . $numControl . ',NUM_CONTROL',
+            'ID_GRUPO' => 'nullable|exists:grupo,ID_GRUPO'
         ]);
 
-        $alumno->update($request->all());
-
-        return response()->json($alumno);
+        try {
+            $alumno->update($validatedData);
+            return response()->json($alumno->load('grupo'));
+        } catch (\Exception $e) {
+            Log::error("Error al actualizar alumno: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al actualizar el alumno.'], 500);
+        }
     }
 
-    public function destroy(Alumno $alumno)
+    public function destroy($numControl)
     {
-        $alumno->delete();
+        $alumno = Alumno::find($numControl);
+        if (!$alumno) {
+            return response()->json(['message' => 'Alumno no encontrado'], 404);
+        }
 
-        return response()->json(null, 204);
+        try {
+            $alumno->delete();
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            Log::error("Error al eliminar alumno: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al eliminar el alumno.'], 500);
+        }
     }
+    
+    public function importar(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|file|mimes:csv,xlsx'
+    ]);
+
+    try {
+                $file = $request->file('archivo');
+
+        Excel::import(new AlumnosImport, $file);
+
+        return response()->json(['message' => 'Importación completada con éxito.'], 200);
+
+    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        return response()->json(['message' => 'La importación falló.', 'errors' => $e->failures()], 422);
+    } catch (\Exception $e) {
+        Log::error("Error al importar alumnos: " . $e->getMessage());
+        return response()->json(['message' => 'Error interno al importar el archivo.'], 500);
+    }
+}
 }
