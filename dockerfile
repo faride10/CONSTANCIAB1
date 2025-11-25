@@ -1,39 +1,31 @@
-FROM composer:2.7.7 as composer
+FROM php:8.2-fpm
 
-FROM php:8.3-fpm-alpine
-
-RUN apk add --no-cache \
-    git \
-    zip \
+# Instalar extensiones necesarias
+RUN apt-get update && apt-get install -y \
     libzip-dev \
+    zip \
+    unzip \
+    libicu-dev \
     libpng-dev \
-    icu-dev \
-    oniguruma-dev \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    && docker-php-ext-install pdo_mysql opcache 
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
+    libjpeg-dev \
+    libfreetype6-dev \
+    git \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install -j$(nproc) intl \
-    && docker-php-ext-install zip
+    && docker-php-ext-install intl \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install gd
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+# Instalar Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
-COPY . /app
+# Copiar proyecto
+WORKDIR /var/www
+COPY . .
 
+# Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader
 
-RUN apk add --no-cache nodejs npm
-RUN npm install
-RUN npm run build
-
-RUN php artisan key:generate \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache \
-    && chmod -R 777 storage bootstrap/cache
+# Permisos
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 CMD ["php-fpm"]
