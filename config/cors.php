@@ -2,25 +2,15 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
-    */
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    // CAMBIO CRÍTICO: Permitir todos los orígenes
-    'allowed_origins' => ['*'],
+    // Cambiar * por el dominio del frontend Angular
+    'allowed_origins' => [
+        'asistencias-itsal.netlify.app',
+        'http://localhost:4200', // para pruebas
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -30,7 +20,8 @@ return [
 
     'max_age' => 0,
 
-    // CAMBIO CRÍTICO: False para permitir el asterisco *
+    // Railway + Angular no requieren credenciales
+    // pero si usas tokens/cookies cambia a true
     'supports_credentials' => false,
 
 ];
