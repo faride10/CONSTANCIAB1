@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void {
         Schema::create('docente', function (Blueprint $table) {
-            $table->id('ID_DOCENTE');
-            $table->string('NOMBRE', 200);
-            $table->string('RFC', 13)->unique()->nullable(); 
-            $table->string('CORREO', 200)->unique()->nullable();
-            $table->string('TELEFONO', 30)->nullable();
+            $table->id('id_docente');
+            $table->string('nombre', 200);
+            $table->string('rfc', 13)->unique()->nullable(); 
+            $table->string('correo', 200)->unique()->nullable();
+            $table->string('telefono', 30)->nullable();
         });
     }
 

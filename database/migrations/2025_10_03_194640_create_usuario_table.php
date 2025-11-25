@@ -7,25 +7,25 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void {
-        Schema::create('USUARIO', function (Blueprint $table) {
-            $table->id('ID_USUARIO');
-            $table->string('USERNAME', 100)->unique();
-            $table->string('PASSWORD_HASH', 255);
+        Schema::create('usuario', function (Blueprint $table) {
+            $table->id('id_usuario');
+            $table->string('username', 100)->unique();
+            $table->string('password_hash', 255);
 
-            $table->foreignId('ID_ROL')
-                  ->constrained('ROL', 'ID_ROL');
+            $table->foreignId('id_rol')
+                  ->constrained('rol', 'id_rol');
 
             // Un docente solo puede tener un usuario
-            $table->foreignId('ID_DOCENTE')
+            $table->foreignId('id_docente')
                   ->nullable()
                   ->unique()
-                  ->constrained('docente', 'ID_DOCENTE')
+                  ->constrained('docente', 'id_docente')
                   ->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('USUARIO');
+        Schema::dropIfExists('usuario');
     }
 };

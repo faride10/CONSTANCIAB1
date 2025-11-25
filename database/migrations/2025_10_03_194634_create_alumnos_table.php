@@ -10,12 +10,12 @@ return new class extends Migration
     {
 
         Schema::create('alumno', function (Blueprint $table) {
-            $table->string('NUM_CONTROL', 30)->primary();   
-            $table->string('NOMBRE', 250);
-            $table->string('CORREO_INSTITUCIONAL', 200)->unique();
-            $table->unsignedBigInteger('ID_GRUPO')->nullable();
-            $table->foreign('ID_GRUPO')
-                  ->references('ID_GRUPO')->on('grupo')     
+            $table->string('num_control', 30)->primary();   
+            $table->string('nombre', 250);
+            $table->string('correo_institucional', 200)->unique();
+            $table->unsignedBigInteger('id_grupo')->nullable();
+            $table->foreign('id_grupo')
+                  ->references('id_grupo')->on('grupo')     
                   ->onDelete('set null');
         });
     }

@@ -7,27 +7,40 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void {
-        Schema::create('ASISTENCIA', function (Blueprint $table) {
-            $table->id('ID_ASISTENCIA');
+        Schema::create('asistencia', function (Blueprint $table) {
+            // Clave primaria
+            $table->id('id_asistencia');
             
-            $table->foreignId('ID_CONFERENCIA')->constrained('CONFERENCIA', 'ID_CONFERENCIA')->onDelete('cascade');
-            $table->string('NUM_CONTROL', 30);
-            $table->foreign('NUM_CONTROL')->references('NUM_CONTROL')->on('ALUMNOS')->onDelete('cascade');
+            // Clave foránea a la tabla 'conferencia'
+            $table->foreignId('id_conferencia')
+                  ->constrained('conferencia', 'id_conferencia')
+                  ->onDelete('cascade');
+                  
+            // Clave foránea a la tabla 'alumnos'
+            $table->string('num_control', 30);
+            $table->foreign('num_control')
+                  ->references('num_control')
+                  ->on('alumnos')
+                  ->onDelete('cascade');
             
-            $table->timestamp('FECHA_REGISTRO')->useCurrent();
+            // Campos de registro
+            $table->timestamp('fecha_registro')->useCurrent();
 
-            $table->string('VERIFICATION_TOKEN')->nullable();
-            $table->timestamp('TOKEN_EXPIRES_AT')->nullable();
-            $table->enum('STATUS', ['pending', 'confirmed'])->default('pending');
+            // Campos para verificación
+            $table->string('verification_token')->nullable();
+            $table->timestamp('token_expires_at')->nullable();
+            $table->enum('status', ['pending', 'confirmed'])->default('pending');
             
+            // Timestamps automáticos de Laravel (created_at y updated_at)
             $table->timestamps();
 
-            $table->unique(['ID_CONFERENCIA', 'NUM_CONTROL']);
+            // Índice único para evitar duplicados
+            $table->unique(['id_conferencia', 'num_control']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('ASISTENCIA');
+        Schema::dropIfExists('asistencia');
     }
 };

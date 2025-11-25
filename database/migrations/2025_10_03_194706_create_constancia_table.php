@@ -6,14 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   public function up(): void {
-    Schema::create('CONSTANCIA', function (Blueprint $table) {
-        $table->id('ID_CONSTANCIA');
-       $table->string('NUM_CONTROL', 30)->unique();
-        $table->foreign('NUM_CONTROL')->references('NUM_CONTROL')->on('ALUMNOS')->onDelete('cascade');
-        $table->date('FECHA_EMISION')->useCurrent();
-    });
-}
+    public function up(): void {
+        // Creación de la tabla 'constancia'
+        Schema::create('constancia', function (Blueprint $table) {
+            // Clave primaria
+            $table->id('id_constancia');
+            
+            // Columna 'num_control' (debe ser única y es una clave foránea)
+            $table->string('num_control', 30)->unique();
+            
+            // Definición de la clave foránea a la tabla 'alumnos'
+            $table->foreign('num_control')
+                  ->references('num_control')
+                  ->on('alumnos')
+                  ->onDelete('cascade');
+                  
+            // Fecha de emisión, usa la fecha actual por defecto
+            $table->date('fecha_emision')->useCurrent();
+            
+            // Opcionalmente, puedes añadir timestamps si necesitas created_at y updated_at
+            // $table->timestamps(); 
+        });
+    }
 
     public function down(): void
     {

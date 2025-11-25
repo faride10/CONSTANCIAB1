@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('CONFERENCIA', function (Blueprint $table) {
-            $table->id('ID_CONFERENCIA');
-            $table->string('NOMBRE_CONFERENCIA', 250);
-            $table->text('TEMA')->nullable();
-            $table->dateTime('FECHA_HORA')->nullable();
-            $table->string('LUGAR', 250)->nullable();
-            $table->integer('NUM_PARTICIPANTES')->nullable();
-            $table->foreignId('ID_PONENTE')->nullable()->constrained('PONENTE', 'ID_PONENTE')->onDelete('set null');
+        Schema::create('conferencia', function (Blueprint $table) {
+            $table->id('id_conferencia');
+            $table->string('nombre_conferencia', 250);
+            $table->text('tema')->nullable();
+            $table->dateTime('fecha_hora')->nullable();
+            $table->string('lugar', 250)->nullable();
+            $table->integer('num_participantes')->nullable();
+            $table->foreignId('id_ponente')->nullable()->constrained('ponente', 'id_ponente')->onDelete('set null');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('CONFERENCIA');
+        Schema::dropIfExists('conferencia');
     }
 };

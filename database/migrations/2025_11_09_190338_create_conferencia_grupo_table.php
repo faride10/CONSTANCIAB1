@@ -6,24 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   
+    
     public function up(): void
-{
-    Schema::create('conferencia_grupo', function (Blueprint $table) {
+    {
+        // Creación de la tabla 'conferencia_grupo'
+        Schema::create('conferencia_grupo', function (Blueprint $table) {
 
-        $table->unsignedBigInteger('ID_CONFERENCIA');
-        $table->foreign('ID_CONFERENCIA')
-              ->references('ID_CONFERENCIA')->on('conferencia')     
-              ->onDelete('cascade');    
+            // Clave foránea para 'conferencia'
+            $table->unsignedBigInteger('id_conferencia');
+            $table->foreign('id_conferencia')
+                  ->references('id_conferencia')
+                  ->on('conferencia')
+                  ->onDelete('cascade');
 
-        $table->unsignedBigInteger('ID_GRUPO');
-        $table->foreign('ID_GRUPO')
-              ->references('ID_GRUPO')->on('grupo') 
-              ->onDelete('cascade');    
-        $table->primary(['ID_CONFERENCIA', 'ID_GRUPO']);
-    });
-}
-
+            // Clave foránea para 'grupo'
+            $table->unsignedBigInteger('id_grupo');
+            $table->foreign('id_grupo')
+                  ->references('id_grupo')
+                  ->on('grupo')
+                  ->onDelete('cascade');
+                  
+            // Definición de la clave primaria compuesta
+            $table->primary(['id_conferencia', 'id_grupo']);
+        });
+    }
+    
     public function down(): void
     {
         Schema::dropIfExists('conferencia_grupo');

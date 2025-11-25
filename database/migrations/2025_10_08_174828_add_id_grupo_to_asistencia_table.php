@@ -9,19 +9,23 @@ return new class extends Migration
     
     public function up(): void
     {
-        
-        Schema::table('ASISTENCIA', function (Blueprint $table) {
-         $table->foreignId('ID_GRUPO')->nullable()->constrained('GRUPO', 'ID_GRUPO')->after('NUM_CONTROL');
-            //
+        // Modifica la tabla 'asistencia'
+        Schema::table('asistencia', function (Blueprint $table) {
+            
+            // Añade la clave foránea 'id_grupo'
+            $table->foreignId('id_grupo')
+                  ->nullable()
+                  ->constrained('grupo', 'id_grupo') // Referencia a la tabla 'grupo'
+                  ->after('num_control');
         });
     }
 
     public function down(): void
     {
-        Schema::table('ASISTENCIA', function (Blueprint $table) {
-        $table->dropForeign(['ID_GRUPO']);
-        $table->dropColumn('ID_GRUPO');
-            
+        // Revierte los cambios en la tabla 'asistencia'
+        Schema::table('asistencia', function (Blueprint $table) {
+            $table->dropForeign(['id_grupo']);
+            $table->dropColumn('id_grupo');
         });
     }
 };

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             
             $table->unsignedBigInteger('conference_id');
-            $table->foreign('conference_id')->references('ID_CONFERENCIA')->on('conferencia')->onDelete('cascade');
+            $table->foreign('conference_id')->references('id_conferencia')->on('conferencia')->onDelete('cascade');
             
             $table->string('student_control_number'); 
             
