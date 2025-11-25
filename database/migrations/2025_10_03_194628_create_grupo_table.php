@@ -6,18 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
     public function up(): void {
-    Schema::create('GRUPO', function (Blueprint $table) {
-        $table->id('ID_GRUPO');
-        $table->string('NOMBRE', 150);
-        $table->string('CARRERA', 150)->nullable();
-        $table->foreignId('ID_DOCENTE')->nullable()->unique()->constrained('DOCENTE', 'ID_DOCENTE')->onDelete('set null');
-    });
-}
+        Schema::create('GRUPO', function (Blueprint $table) {
+            $table->id('ID_GRUPO');
+            $table->string('NOMBRE', 100);
+
+            // Un docente solo puede tener un grupo
+            $table->foreignId('ID_DOCENTE')
+                  ->unique()
+                  ->constrained('docente', 'ID_DOCENTE')
+                  ->onDelete('cascade');
+        });
+    }
 
     public function down(): void
     {
-        Schema::dropIfExists('grupo');
+        Schema::dropIfExists('GRUPO');
     }
 };
