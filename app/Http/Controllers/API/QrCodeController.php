@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Throwable;
-use BaconQrCode\Renderer\Image\Png;
-use BaconQrCode\Writer;
+
 
 class QrCodeController extends Controller
 {
@@ -46,13 +45,14 @@ class QrCodeController extends Controller
 
         try {
 
-    $qrPng = QrCode::format('png')
-        ->size(300)
-        ->margin(10)
-        ->errorCorrection('H')
-        ->generate($qrDataString);
+    $qrPng = QrCode::format('svg') 
+    ->size(300)
+    ->margin(10)
+    ->errorCorrection('H')
+    ->generate($qrDataString);
 
-    $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrPng);
+    // Y cambia el encabezado del base64:
+    $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrPng);
 
 } catch (\Throwable $e) {
 
@@ -64,7 +64,7 @@ class QrCodeController extends Controller
 }
 
         return response()->json([
-            'qrCodeBased64' => $qrCodeBase64,
+            'qrCodeBase64' => $qrCodeBase64,
             'displayInfo'   => $displayInfo,
         ]);
     }

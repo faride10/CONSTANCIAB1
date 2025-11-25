@@ -26,12 +26,16 @@ class Conferencia extends Model
     {
         return $this->belongsToMany(
             Grupo::class,
-            'conferencia_grupo',        
+            'conferencia_grupo',      
             'ID_CONFERENCIA',       
-            'ID_GRUPO'      
+            'ID_GRUPO'        
         );
     }
 
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class, 'ID_CONFERENCIA', 'ID_CONFERENCIA');
+    }
     public function ponente()
     {
         return $this->belongsTo(Ponente::class, 'ID_PONENTE', 'ID_PONENTE');

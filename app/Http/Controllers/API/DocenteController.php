@@ -29,7 +29,7 @@ class DocenteController extends Controller
             'TELEFONO' => 'nullable|string|max:30',
         ]);
 
-        try {
+        try { 
             $docente = Docente::create($validatedData);
 
             $usuario = new Usuario();
@@ -88,24 +88,23 @@ class DocenteController extends Controller
     
     public function importar(Request $request)
     {
-    $request->validate([
-        'archivo' => 'required|file|mimes:csv,xlsx'
-    ]);
+        $request->validate([
+            'archivo' => 'required|file|mimes:csv,xlsx'
+        ]);
 
-    try {
-        $file = $request->file('archivo');
+        try {
+            $file = $request->file('archivo');
 
-        Excel::import(new DocentesImport, $file);
+            Excel::import(new DocentesImport, $file);
 
-        return response()->json(['message' => 'Importación completada con éxito.'], 200);
+            return response()->json(['message' => 'Importación completada con éxito.'], 200);
 
-    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-        return response()->json(['message' => 'La importación falló.', 'errors' => $e->failures()], 422);
-    } catch (\Exception $e) {
-        Log::error("Error al importar docentes: " . $e->getMessage());
-        return response()->json(['message' => 'Error interno al importar el archivo.'], 500);
-    }
-
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            return response()->json(['message' => 'La importación falló.', 'errors' => $e->failures()], 422);
+        } catch (\Exception $e) {
+            Log::error("Error al importar docentes: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al importar el archivo.'], 500);
+        }
     }
 
     public function getMiGrupo(Request $request)
@@ -123,6 +122,7 @@ class DocenteController extends Controller
         $docente->load([
             'grupo' => function ($query) {
                 $query->with('alumnos'); 
+                $query->with('conferencias.ponente'); 
             }
         ]);
 
@@ -134,4 +134,110 @@ class DocenteController extends Controller
             'grupo' => $docente->grupo
         ], 200);
     }
+
+    public function getPerfil(Request $request)
+    {
+        $usuario = $request->user();
+        $docente = $usuario->docente; 
+
+        if (!$docente) {
+            
+            return response()->json(['message' => 'Perfil de docente no encontrado.'], 404);
+        }
+
+        return response()->json([
+            'NOMBRE' => $docente->NOMBRE,
+            'RFC' => $docente->RFC,
+            'CORREO' => $docente->CORREO,
+            'TELEFONO' => $docente->TELEFONO
+        ]);
+    }
+
+    public function updatePerfil(Request $request)
+    {
+        $usuario = $request->user();
+        $docente = $usuario->docente;
+
+        if (!$docente) {
+            return response()->json(['message' => 'Perfil no encontrado'], 404);
+        }
+
+        $request->validate([
+            'CORREO' => 'required|email|max:200|unique:docente,CORREO,' . $docente->ID_DOCENTE . ',ID_DOCENTE',
+            'TELEFONO' => 'nullable|string|max:30',
+        ]);
+
+        $docente->update([
+            'CORREO' => $request->CORREO,
+            'TELEFONO' => $request->TELEFONO
+        ]);
+
+        return response()->json(['message' => 'Información actualizada correctamente.']);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed', 
+        ]);
+
+        $usuario = $request->user();
+
+        if (!Hash::check($request->current_password, $usuario->PASSWORD_HASH)) {
+            return response()->json(['message' => 'La contraseña actual es incorrecta.'], 400);
+        }
+
+        $usuario->PASSWORD_HASH = Hash::make($request->new_password); 
+        $usuario->save();
+
+        return response()->json(['message' => 'Contraseña actualizada correctamente.']);
+    }
+
+    public function getDashboardSummary(Request $request)
+{
+    $usuario = $request->user();
+    $docente = $usuario->docente; 
+
+    if (!$docente) {
+        return response()->json(['message' => 'Perfil de docente no encontrado.'], 404);
+    }
+
+    $grupo = $docente->grupo;
+    $alumnosCount = 0;
+    $proximasConferencias = [];
+    $conferenciasCount = 0;
+    $nombreGrupo = 'Sin Grupo';
+
+    if ($grupo) {
+
+        $nombreGrupo = $grupo->NOMBRE;
+
+        $alumnosCount = $grupo->alumnos->count();
+        $conferenciasDelGrupo = $grupo->conferencias()
+            ->where('FECHA_HORA', '>=', now()) 
+            ->orderBy('FECHA_HORA', 'asc')
+            ->with('ponente')
+            ->get();
+
+        $conferenciasCount = $conferenciasDelGrupo->count();
+
+        $proximasConferencias = $conferenciasDelGrupo->map(function ($conferencia) {
+            return [
+                'nombre' => $conferencia->NOMBRE_CONFERENCIA,
+                'fecha_hora' => $conferencia->FECHA_HORA,
+                'ponente' => $conferencia->ponente->NOMBRE ?? 'N/A'
+            ];
+        });
+    }
+
+    return response()->json([
+        'docente_nombre' => $docente->NOMBRE,   
+        'grupo_asignado' => $nombreGrupo,
+        'alumnos_en_grupo' => $alumnosCount,
+        'proximas_conferencias_count' => $conferenciasCount,
+        'constancias_pendientes' => 0,
+        'lista_proximas_conferencias' => $proximasConferencias
+    ]);
+}
 }

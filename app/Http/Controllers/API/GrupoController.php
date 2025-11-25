@@ -63,4 +63,19 @@ class GrupoController extends Controller
             return response()->json(['message' => 'Error interno al eliminar el grupo.'], 500);
         }
     }
+
+    public function getDocenteByGroupId($id)
+{
+    $grupo = \App\Models\Grupo::with('docente')->find($id);
+
+    if (!$grupo) {
+        return response()->json(['message' => 'Grupo no encontrado.'], 404);
+    }
+    
+    $docenteNombre = $grupo->docente ? $grupo->docente->NOMBRE : 'No Asignado';
+
+    return response()->json([
+        'docenteNombre' => $docenteNombre,
+    ]);
+}
 }

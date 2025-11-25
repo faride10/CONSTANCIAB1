@@ -9,15 +9,23 @@ class Asistencia extends Model
 {
     use HasFactory;
 
+    protected $table = 'ASISTENCIA';    
+    protected $primaryKey = 'ID_ASISTENCIA';    
 
-    protected $table = 'ASISTENCIA';
-    protected $primaryKey = 'ID_ASISTENCIA';
-
-    public $timestamps = false;
+    public $timestamps = true; 
 
     protected $fillable = [
         'ID_CONFERENCIA',
         'NUM_CONTROL',
+        'FECHA_REGISTRO',     
+        'VERIFICATION_TOKEN',
+        'TOKEN_EXPIRES_AT',
+        'STATUS'
+    ];
+
+    protected $casts = [
+        'TOKEN_EXPIRES_AT' => 'datetime',
+        'FECHA_REGISTRO' => 'datetime'
     ];
 
     public function conferencia()
