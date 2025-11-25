@@ -10,7 +10,9 @@ return new class extends Migration
         Schema::create('asistencia', function (Blueprint $table) {
             $table->id('id_asistencia');
             
-            $table->foreignId('id_conferencia')->constrained('conferencia', 'id_conferencias')->onDelete('cascade');
+            // LÍNEA CORREGIDA: Cambiado 'id_conferencias' a 'id_conferencia'
+            $table->foreignId('id_conferencia')->constrained('conferencia', 'id_conferencia')->onDelete('cascade');
+            
             $table->string('num_control', 30);
             $table->foreign('num_control')->references('num_control')->on('alumnos')->onDelete('cascade');
             
