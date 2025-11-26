@@ -6,10 +6,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Cambiar * por el dominio del frontend Angular
     'allowed_origins' => [
-        'asistencias-itsal.netlify.app',
-        'http://localhost:4200', // para pruebas
+        'https://asistencias-itsal.netlify.app',
+        'http://localhost:4200', 
     ],
 
     'allowed_origins_patterns' => [],
@@ -20,8 +19,6 @@ return [
 
     'max_age' => 0,
 
-    // Railway + Angular no requieren credenciales
-    // pero si usas tokens/cookies cambia a true
     'supports_credentials' => false,
 
 ];
