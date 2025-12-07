@@ -9,17 +9,17 @@ class Conferencia extends Model
 {
     use HasFactory;
 
-    protected $table = 'CONFERENCIA';
-    protected $primaryKey = 'ID_CONFERENCIA';
+    protected $table = 'conferencia';
+    protected $primaryKey = 'id_conferencia';
 
     public $timestamps = false;
     protected $fillable = [
-        'NOMBRE_CONFERENCIA',
-        'TEMA',
-        'FECHA_HORA',
-        'LUGAR',
-        'NUM_PARTICIPANTES',
-        'ID_PONENTE'
+        'nombre_conferencia',
+        'tema',
+        'fecha_hora',
+        'lugar',
+        'num_participantes',
+        'id_ponente'
     ];
 
     public function grupos()
@@ -27,17 +27,17 @@ class Conferencia extends Model
         return $this->belongsToMany(
             Grupo::class,
             'conferencia_grupo',      
-            'ID_CONFERENCIA',       
-            'ID_GRUPO'        
+            'id_conferencia',       
+            'id_grupo'        
         );
     }
 
     public function asistencias()
     {
-        return $this->hasMany(Asistencia::class, 'ID_CONFERENCIA', 'ID_CONFERENCIA');
+        return $this->hasMany(Asistencia::class, 'id_conferencia', 'id_conferencia');
     }
     public function ponente()
     {
-        return $this->belongsTo(Ponente::class, 'ID_PONENTE', 'ID_PONENTE');
+        return $this->belongsTo(Ponente::class, 'id_ponente', 'id_ponente');
     }
 }

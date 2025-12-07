@@ -19,14 +19,14 @@ class ConferenceController extends Controller
     public function store(Request $request)
 {
     $validatedData = $request->validate([
-        'NOMBRE_CONFERENCIA' => 'required|string|max:200',
-        'TEMA' => 'nullable|string|max:255',
-        'FECHA_HORA' => 'required|date',
-        'LUGAR' => 'required|string|max:150',
-        'NUM_PARTICIPANTES' => 'nullable|integer',
-        'ID_PONENTE' => 'nullable|exists:ponente,ID_PONENTE',
+        'nombre_conferencia' => 'required|string|max:200',
+        'tema' => 'nullable|string|max:255',
+        'fecha_hora' => 'required|date',
+        'lugar' => 'required|string|max:150',
+        'num_participantes' => 'nullable|integer',
+        'id_ponente' => 'nullable|exists:ponente,id_ponente',
         'grupos' => 'required|array',
-        'grupos.*' => 'integer|exists:grupo,ID_GRUPO' 
+        'grupos.*' => 'integer|exists:grupo,id_grupo', 
     ]);
 
     try {
@@ -46,13 +46,13 @@ class ConferenceController extends Controller
     
     public function getPublicInfo($id)
     {
-        $conferencia = Conferencia::where('ID_CONFERENCIA', $id)->first();
+        $conferencia = Conferencia::where('id_conferencia', $id)->first();
         if (!$conferencia) {
             return response()->json(['message' => 'No encontrada'], 404);
         }
         return response()->json([
-            'id' => $conferencia->ID_CONFERENCIA,
-            'nombre' => $conferencia->NOMBRE_CONFERENCIA
+            'id' => $conferencia->id_conferencia,
+            'nombre' => $conferencia->nombre_conferencia
         ]);
     } 
 

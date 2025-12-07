@@ -28,7 +28,7 @@ class AlumnosImport implements
     public function __construct()
     {
       
-        $this->grupos = Grupo::pluck('ID_GRUPO', 'NOMBRE')->all();
+        $this->grupos = Grupo::pluck('id_grupo', 'nombre')->all();
     }
 
     public function model(array $row)
@@ -37,20 +37,20 @@ class AlumnosImport implements
         $idGrupo = $this->grupos[$row['nombre_grupo']] ?? null;
 
         return new Alumno([
-            'NUM_CONTROL'         => $row['num_control'],
-            'NOMBRE'              => $row['nombre_completo'],
-            'CORREO_INSTITUCIONAL'=> $row['correo_institucional'],
-            'ID_GRUPO'            => $idGrupo,
+            'num_control'         => $row['num_control'],
+            'nombre'              => $row['nombre_completo'],
+            'correo_institucional'=> $row['correo_institucional'],
+            'id_grupo'            => $idGrupo,
         ]);
     }
 
     public function rules(): array
     {
         return [
-            'num_control' => 'required|max:30|unique:alumno,NUM_CONTROL',
+            'num_control' => 'required|max:30|unique:alumno,num_control',
             'nombre_completo' => 'required|string|max:250',
-            'correo_institucional' => 'required|email|max:200|unique:alumno,CORREO_INSTITUCIONAL',
-            'nombre_grupo' => 'nullable|string|exists:grupo,NOMBRE',
+            'correo_institucional' => 'required|email|max:200|unique:alumno,correo_institucional',
+            'nombre_grupo' => 'nullable|string|exists:grupo,nombre',
         ];
     }
     public function onFailure(Failure ...$failures)

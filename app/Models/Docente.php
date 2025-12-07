@@ -9,22 +9,22 @@ class Docente extends Model
 {
     use HasFactory;
     protected $table = 'docente';
-    protected $primaryKey = 'ID_DOCENTE';
+    protected $primaryKey = 'id_docente';
     public $timestamps = false;
     protected $fillable = [
-        'NOMBRE',
-        'RFC',
-        'CORREO',
-        'TELEFONO'
+        'nombre',
+        'rfc',
+        'correo',
+        'telefono',
     ];
 
     public function grupo()
     {
-        return $this->hasOne(Grupo::class, 'ID_DOCENTE', 'ID_DOCENTE');
+        return $this->hasOne(Grupo::class, 'id_docente', 'id_docente');
     }
 
     public function usuario()
     {
-        return $this->hasOne(Usuario::class, 'ID_DOCENTE', 'ID_DOCENTE');
+        return $this->hasOne(Usuario::class, 'id_docente', 'id_docente');
     }
 }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->foreignId('id_rol')
                   ->constrained('rol', 'id_rol');
 
-            // Un docente solo puede tener un usuario
             $table->foreignId('id_docente')
                   ->nullable()
                   ->unique()

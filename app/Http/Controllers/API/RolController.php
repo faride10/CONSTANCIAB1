@@ -15,7 +15,7 @@ class RolController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['NOMBRE_ROL' => 'required|string|max:50|unique:ROL,NOMBRE_ROL']);
+        $request->validate(['nombre_rol' => 'required|string|max:50|unique:rol,nombre_rol']);
         $rol = Rol::create($request->all());
         return response()->json($rol, 201);
     }
@@ -27,7 +27,7 @@ class RolController extends Controller
 
     public function update(Request $request, Rol $rol)
     {
-        $request->validate(['NOMBRE_ROL' => 'sometimes|required|string|max:50|unique:ROL,NOMBRE_ROL,' . $rol->ID_ROL . ',ID_ROL']);
+        $request->validate(['nombre_rol' => 'sometimes|required|string|max:50|unique:rol,nombre_rol,' . $rol->id_rol . ',id_rol']);
         $rol->update($request->all());
         return response()->json($rol);
     }

@@ -17,8 +17,8 @@ class ConstanciaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'NUM_CONTROL' => 'required|unique:CONSTANCIA,NUM_CONTROL|exists:ALUMNOS,NUM_CONTROL',
-            'FECHA_EMISION' => 'nullable|date',
+            'num_control' => 'required|unique:constancia,num_control|exists:alumnos,num_control',
+            'fecha_emision' => 'nullable|date',
         ]);
         $constancia = Constancia::create($request->all());
         return response()->json($constancia, 201);
@@ -32,7 +32,7 @@ class ConstanciaController extends Controller
     public function update(Request $request, Constancia $constancia)
     {
         $request->validate([
-            'FECHA_EMISION' => 'sometimes|nullable|date',
+            'fecha_emision' => 'sometimes|nullable|date',
         ]);
         $constancia->update($request->all());
         return response()->json($constancia);
@@ -49,7 +49,7 @@ public function generar(Alumno $alumno)
 {
     $minimo_asistencias = 3;
 
-    $constanciaExistente = Constancia::where('NUM_CONTROL', $alumno->NUM_CONTROL)->exists();
+    $constanciaExistente = Constancia::where('num_control', $alumno->num_control)->exists();
     if ($constanciaExistente) {
         return response()->json(['message' => 'Este alumno ya tiene una constancia generada.'], 409);
     }
@@ -58,7 +58,7 @@ public function generar(Alumno $alumno)
 
     if ($numeroDeAsistencias >= $minimo_asistencias) {
         $constancia = Constancia::create([
-            'NUM_CONTROL' => $alumno->NUM_CONTROL
+            'num_control' => $alumno->num_control
         ]);
 
         return response()->json([

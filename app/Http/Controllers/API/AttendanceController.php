@@ -18,17 +18,17 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'control_number' => 'required|string',
-            'conference_id' => 'required|exists:CONFERENCIA,ID_CONFERENCIA',
+            'conference_id' => 'required|exists:conferencia,id_conferencia',
         ]);
 
-        $alumno = Alumno::where('NUM_CONTROL', $request->control_number)->first();
+        $alumno = Alumno::where('num_control', $request->control_number)->first();
 
         if (!$alumno) {
             return response()->json(['message' => 'Número de control no encontrado.'], 404);
         }
 
-        $existingAttendance = Asistencia::where('ID_CONFERENCIA', $request->conference_id)
-                                ->where('NUM_CONTROL', $request->control_number)
+        $existingAttendance = Asistencia::where('id_conferencia', $request->conference_id)
+                                ->where('num_control', $request->control_number)
                                 ->first();
 
         if ($existingAttendance && $existingAttendance->STATUS === 'confirmed') {
@@ -37,14 +37,14 @@ class AttendanceController extends Controller
 
         Asistencia::updateOrCreate(
             [
-                'ID_CONFERENCIA' => $request->conference_id,
-                'NUM_CONTROL' => $request->control_number
+                'id_conferencia' => $request->conference_id,
+                'num_control' => $request->control_number
             ],
             [
-                'VERIFICATION_TOKEN' => null, 
-                'TOKEN_EXPIRES_AT' => null,   
-                'STATUS' => 'confirmed',    
-                'FECHA_REGISTRO' => now()
+                'verification_token' => null, 
+                'token_expires_at' => null,   
+                'status' => 'confirmed',    
+                'fecha_registro' => now()
             ]
         );
 
@@ -58,16 +58,13 @@ class AttendanceController extends Controller
 
      public function generateQr($id)
     {
-        // 🚨 CAMBIO CLAVE: Usamos la variable de entorno FRONTEND_URL en lugar de la IP local
         $frontendUrl = env('FRONTEND_URL');
 
-        // Verificación de seguridad en caso de que la variable no esté definida en el .env
         if (!$frontendUrl) {
             Log::error('FRONTEND_URL no está definida en el archivo .env. No se puede generar el QR.');
             return response()->json(['message' => 'Error de configuración del servidor. FRONTEND_URL no definida.'], 500);
         }
 
-        // Construimos la URL de destino usando la variable de entorno (ej. HTTP_SERVER_ADDRESS/asistencia/1)
         $url_destino = $frontendUrl . "/asistencia/" . $id;
 
         try {

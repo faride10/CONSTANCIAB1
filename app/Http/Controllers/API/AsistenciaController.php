@@ -19,12 +19,12 @@ class AsistenciaController extends Controller
         $query = Asistencia::with(['conferencia', 'alumno']);
 
         if ($request->has('conferencia_id')) {
-            $query->where('ID_CONFERENCIA', $request->conferencia_id);
+            $query->where('id_conferencia', $request->conferencia_id);
         }
 
         if ($request->has('grupo_id')) {
             $query->whereHas('alumno', function ($q) use ($request) {
-                $q->where('ID_GRUPO', $request->grupo_id);
+                $q->where('id_grupo', $request->grupo_id);
             });
         }
 
@@ -37,26 +37,25 @@ class AsistenciaController extends Controller
     {
      
         $validated = $request->validate([
-            'ID_CONFERENCIA' => 'required|exists:conferencia,ID_CONFERENCIA',
-            'ID_GRUPO'       => 'required|exists:grupo,ID_GRUPO',             
-            'NUM_CONTROL'    => 'required|exists:alumno,NUM_CONTROL',         
+            'id_conferencia' => 'required|exists:conferencia,id_conferencia',
+            'id_grupo'       => 'required|exists:grupo,id_grupo',             
+            'num_control'    => 'required|exists:alumno,num_control',         
         ]);
 
         $user = $request->user(); 
 
         if ($user->ID_ROL == 1) {
-            // Admin
-        } else if ($user->ID_ROL == 2 && $user->docente) {
-            if ($user->docente->ID_GRUPO != $validated['ID_GRUPO']) {
+
+        } else if ($user->id_rol == 2 && $user->docente) {
+            if ($user->docente->ID_GRUPO != $validated['id_grupo']) {
                 return response()->json(['message' => 'No tienes permiso para registrar asistencia en este grupo.'], 403);
             }
         } else {
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 
-        // Verificar si ya existe para evitar duplicados
-        $existe = Asistencia::where('ID_CONFERENCIA', $validated['ID_CONFERENCIA'])
-                            ->where('NUM_CONTROL', $validated['NUM_CONTROL'])
+        $existe = Asistencia::where('id_conferencia', $validated['id_conferencia'])
+                            ->where('num_control', $validated['num_control'])
                             ->first();
 
         if ($existe) {
@@ -64,10 +63,10 @@ class AsistenciaController extends Controller
         }
 
         $datos = [
-            'ID_CONFERENCIA' => $validated['ID_CONFERENCIA'],
-            'NUM_CONTROL' => $validated['NUM_CONTROL'],
-            'STATUS' => 'confirmed',
-            'FECHA_REGISTRO' => now()
+            'id_conferencia' => $validated['id_conferencia'],
+            'num_control' => $validated['num_control'],
+            'status' => 'confirmed',
+            'fecha_registro' => now()
         ];
 
         $asistencia = Asistencia::create($datos);
@@ -81,7 +80,6 @@ class AsistenciaController extends Controller
 
     public function destroy($id)
     {
-        // Buscamos manual para asegurar que existe
         $asistencia = Asistencia::find($id);
 
         if (!$asistencia) {
@@ -90,10 +88,10 @@ class AsistenciaController extends Controller
 
         $user = auth()->user(); 
 
-        if ($user->ID_ROL == 1) {
-            // Admin
+        if ($user->id_rol == 1) {
+            
         } 
-        else if ($user->ID_ROL == 2) {
+        else if ($user->id_rol == 2) {
             $docente = $user->docente;
             
             if (!$docente) {
@@ -103,10 +101,10 @@ class AsistenciaController extends Controller
             $alumno = $asistencia->alumno;
 
             if (!$alumno) {
-                // Permitir borrar si el alumno ya no existe
-            } else if ($docente->ID_GRUPO != $alumno->ID_GRUPO) {
+
+            } else if ($docente->id_grupo != $alumno->id_grupo) {
                 return response()->json([
-                    'message' => "No tienes permiso. Tu Grupo es: " . $docente->ID_GRUPO . " y el Alumno es del Grupo: " . $alumno->ID_GRUPO
+                    'message' => "No tienes permiso. Tu Grupo es: " . $docente->id_grupo . " y el Alumno es del Grupo: " . $alumno->id_grupo
                 ], 403);
             }
         } 
@@ -120,12 +118,12 @@ class AsistenciaController extends Controller
 
     public function porConferencia(Request $request, $id)
     {
-        $query = Asistencia::where('ID_CONFERENCIA', $id)
+        $query = Asistencia::where('id_conferencia', $id)
                            ->with(['conferencia', 'alumno']);
         
         if ($request->has('grupo_id')) {
             $query->whereHas('alumno', function ($q) use ($request) {
-                $q->where('ID_GRUPO', $request->grupo_id);
+                $q->where('id_grupo', $request->grupo_id);
             });
         }
 

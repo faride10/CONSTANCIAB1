@@ -9,19 +9,19 @@ class Constancia extends Model
 {
     use HasFactory;
 
-    protected $table = 'CONSTANCIA'; 
-    protected $primaryKey = 'ID_CONSTANCIA'; 
+    protected $table = 'constancias'; 
+    protected $primaryKey = 'id_constancia'; 
     public $timestamps = false;
 
     protected $fillable = [
-        'NUM_CONTROL', 
-        'FECHA_EMISION', 
+        'num_control', 
+        'fecha_emision', 
     ];
 
     
     public function alumno()
     {
        
-        return $this->belongsTo(Alumno::class, 'NUM_CONTROL', 'NUM_CONTROL');
+        return $this->belongsTo(Alumno::class, 'num_control', 'num_control');
     }
 }

@@ -62,7 +62,7 @@ public function getMiGrupo(Request $request)
 
         return response()->json([
             'grupo' => $grupo->grupo,   
-            'docente_id' => $docente->ID_DOCENTE
+            'docente_id' => $docente->id_docente
         ], 200);
     }
 }

@@ -19,10 +19,10 @@ class AlumnoController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'NUM_CONTROL' => 'required|string|max:30|unique:alumno,NUM_CONTROL',
-            'NOMBRE' => 'required|string|max:250',
-            'CORREO_INSTITUCIONAL' => 'required|string|email|max:200|unique:alumno,CORREO_INSTITUCIONAL',
-            'ID_GRUPO' => 'nullable|exists:grupo,ID_GRUPO'
+            'num_control' => 'required|string|max:10|unique:alumno,num_control',
+            'nombre' => 'required|string|max:250',
+            'correo_institucional' => 'required|string|email|max:200|unique:alumno,correo_institucional',
+            'id_grupo' => 'nullable|exists:grupo,id_grupo'
         ]);
 
         try {
@@ -51,10 +51,10 @@ class AlumnoController extends Controller
         }
 
         $validatedData = $request->validate([
-            'NUM_CONTROL' => 'sometimes|required|string|max:30|unique:alumno,NUM_CONTROL,' . $numControl . ',NUM_CONTROL',
-            'NOMBRE' => 'sometimes|required|string|max:250',
-            'CORREO_INSTITUCIONAL' => 'sometimes|required|string|email|max:200|unique:alumno,CORREO_INSTITUCIONAL,' . $numControl . ',NUM_CONTROL',
-            'ID_GRUPO' => 'nullable|exists:grupo,ID_GRUPO'
+            'num_control' => 'sometimes|required|string|max:30|unique:alumno,num_control,' . $numControl . ',num_control',
+            'nombre' => 'sometimes|required|string|max:250',
+            'correo_institucional' => 'sometimes|required|string|email|max:200|unique:alumno,correo_institucional,' . $numControl . ',num_control',
+            'id_grupo' => 'nullable|exists:grupo,id_grupo'
         ]);
 
         try {

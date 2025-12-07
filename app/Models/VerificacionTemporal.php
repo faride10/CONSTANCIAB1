@@ -9,24 +9,24 @@ class VerificacionTemporal extends Model
 {
     use HasFactory;
 
-    protected $table = 'VERIFICACION_TEMPORAL'; 
+    protected $table = 'verificacion_temporal'; 
 
-    protected $primaryKey = 'NUM_CONTROL_FK'; 
+    protected $primaryKey = 'num_control_fk'; 
     public $incrementing = false;
     protected $keyType = 'string';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'NUM_CONTROL_FK', 
-        'CODIGO_OTP', 
-        'EXPIRA_EN', 
+        'num_control_fk', 
+        'codigo_otp', 
+        'expira_en', 
     ];
 
    
     public function alumno()
     {
 
-        return $this->belongsTo(Alumno::class, 'NUM_CONTROL_FK', 'NUM_CONTROL');
+        return $this->belongsTo(Alumno::class, 'num_control_fk', 'num_control');
     }
 }

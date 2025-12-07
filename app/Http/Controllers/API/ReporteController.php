@@ -22,8 +22,8 @@ class ReporteController extends Controller
 
             $grupos = $conferencia->grupos;
 
-            $asistencias = Asistencia::where('ID_CONFERENCIA', $conferencia->ID_CONFERENCIA)
-                                     ->pluck('NUM_CONTROL')
+            $asistencias = Asistencia::where('id_conferencia', $conferencia->id_conferencia)
+                                     ->pluck('num_control')
                                      ->flip(); 
 
             $reporteGrupos = $grupos->map(function ($grupo) use ($asistencias) {
@@ -32,30 +32,30 @@ class ReporteController extends Controller
                 $totalAsistencias = 0;
 
                 foreach ($grupo->alumnos as $alumno) {
-                    if ($asistencias->has($alumno->NUM_CONTROL)) {
+                    if ($asistencias->has($alumno->num_control)) {
                         $totalAsistencias++;
                     }
                 }
 
                 $docenteNombre = 'Sin Asignar';
                 if ($grupo->docente) {
-                    $docenteNombre = $grupo->docente->NOMBRE . ' ' . ($grupo->docente->APELLIDOS ?? '');
+                    $docenteNombre = $grupo->docente->nombre . ' ' . ($grupo->docente->apellidos ?? '');
                 }
 
                 return [
-                    'ID_GRUPO' => $grupo->ID_GRUPO,
-                    'NOMBRE_GRUPO' => $grupo->NOMBRE,
-                    'DOCENTE_NOMBRE' => $docenteNombre,
-                    'TOTAL_ALUMNOS' => $totalAlumnos,
-                    'TOTAL_ASISTENCIAS' => $totalAsistencias,
+                    'id_grupo' => $grupo->id_grupo,
+                    'nombre_grupo' => $grupo->nombre,
+                    'docente_nombre' => $docenteNombre,
+                    'total_alumnos' => $totalAlumnos,
+                    'total_asistencias' => $totalAsistencias,
                 ];
             });
 
             return response()->json([
                 'conferencia' => [
-                    'ID_CONFERENCIA' => $conferencia->ID_CONFERENCIA,
-                    'TITULO' => $conferencia->NOMBRE_CONFERENCIA, 
-                    'FECHA_HORA' => $conferencia->FECHA_HORA,
+                    'id_conferencia' => $conferencia->id_conferencia,
+                    'titulo' => $conferencia->nombre_conferencia, 
+                    'fecha_hora' => $conferencia->fecha_hora,
                 ],
                 'reporte_grupos' => $reporteGrupos,
             ]);
@@ -76,25 +76,25 @@ class ReporteController extends Controller
                 return response()->json(['message' => 'Datos no encontrados'], 404);
             }
 
-            $asistencias = Asistencia::where('ID_CONFERENCIA', $idConferencia)
-                                     ->where('ID_GRUPO', $idGrupo)
-                                     ->pluck('NUM_CONTROL')
+            $asistencias = Asistencia::where('id_conferencia', $idConferencia)
+                                     ->where('id_grupo', $idGrupo)
+                                     ->pluck('num_control')
                                      ->flip();
 
             $reporteAlumnos = $grupo->alumnos->map(function ($alumno) use ($asistencias) {
                 return [
-                    'NUM_CONTROL' => $alumno->NUM_CONTROL,
-                    'NOMBRE_ALUMNO' => $alumno->NOMBRE . ' ' . ($alumno->APELLIDOS ?? ''),
-                    'ASISTIO' => $asistencias->has($alumno->NUM_CONTROL),  
+                    'num_control' => $alumno->num_control,
+                    'nombre_alumno' => $alumno->nombre . ' ' . ($alumno->apellidos ?? ''),
+                    'asistio' => $asistencias->has($alumno->num_control),  
                 ];
             });
 
             return response()->json([
                 'conferencia' => [
-                    'TITULO' => $conferencia->NOMBRE_CONFERENCIA,
+                    'titulo' => $conferencia->nombre_conferencia,
                 ],
                 'grupo' => [
-                    'NOMBRE_GRUPO' => $grupo->NOMBRE,
+                    'nombre_grupo' => $grupo->nombre,
                 ],
                 'reporte_alumnos' => $reporteAlumnos,
             ]);

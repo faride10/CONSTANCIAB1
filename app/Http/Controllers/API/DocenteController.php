@@ -23,21 +23,21 @@ class DocenteController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'NOMBRE' => 'required|string|max:200',
-            'RFC' => 'required|string|max:13|unique:docente,RFC',
-            'CORREO' => 'nullable|email|max:200|unique:docente,CORREO',
-            'TELEFONO' => 'nullable|string|max:30',
+            'nombre' => 'required|string|max:200',
+            'rfc' => 'required|string|max:13|unique:docente,rfc',
+            'correo' => 'nullable|email|max:200|unique:docente,correo',
+            'telefono' => 'nullable|string|max:30',
         ]);
 
         try { 
             $docente = Docente::create($validatedData);
 
             $usuario = new Usuario();
-            $usuario->USERNAME = $docente->RFC; 
-            $usuario->PASSWORD_HASH = Hash::make($docente->RFC); 
-            $usuario->ID_ROL = 2; 
+            $usuario->username = $docente->RFC; 
+            $usuario->password_hash = Hash::make($docente->rfc); 
+            $usuario->id_rol = 2; 
             $usuario->needs_password_change = true; 
-            $usuario->ID_DOCENTE = $docente->ID_DOCENTE; 
+            $usuario->id_docente = $docente->id_docente; 
             $usuario->save();
 
             return response()->json($docente->load('usuario'), 201);
@@ -56,16 +56,16 @@ class DocenteController extends Controller
     public function update(Request $request, Docente $docente)
     {
         $validatedData = $request->validate([
-            'NOMBRE' => 'sometimes|required|string|max:200',
-            'RFC' => 'sometimes|required|string|max:13|unique:docente,RFC,' . $docente->ID_DOCENTE . ',ID_DOCENTE',
-            'CORREO' => 'sometimes|nullable|email|max:200|unique:docente,CORREO,' . $docente->ID_DOCENTE . ',ID_DOCENTE',
-            'TELEFONO' => 'sometimes|nullable|string|max:30',
+            'nombre' => 'sometimes|required|string|max:200',
+            'rfc' => 'sometimes|required|string|max:13|unique:docente,rfc,' . $docente->id_docente . ',id_docente',
+            'correo' => 'sometimes|nullable|email|max:200|unique:docente,correo,' . $docente->id_docente . ',id_docente',
+            'telefono' => 'sometimes|nullable|string|max:15',
         ]);
 
         $docente->update($validatedData);
 
-        if ($request->has('RFC') && $docente->usuario) {
-            $docente->usuario->update(['USERNAME' => $request->RFC]);
+        if ($request->has('rfc') && $docente->usuario) {
+            $docente->usuario->update(['username' => $request->rfc]);
         }
 
         return response()->json($docente);
@@ -146,10 +146,10 @@ class DocenteController extends Controller
         }
 
         return response()->json([
-            'NOMBRE' => $docente->NOMBRE,
-            'RFC' => $docente->RFC,
-            'CORREO' => $docente->CORREO,
-            'TELEFONO' => $docente->TELEFONO
+            'nombre' => $docente->nombre,
+            'rfc' => $docente->rfc,
+            'correo' => $docente->correo,
+            'telefono' => $docente->telefono
         ]);
     }
 
@@ -163,13 +163,13 @@ class DocenteController extends Controller
         }
 
         $request->validate([
-            'CORREO' => 'required|email|max:200|unique:docente,CORREO,' . $docente->ID_DOCENTE . ',ID_DOCENTE',
-            'TELEFONO' => 'nullable|string|max:30',
+            'correo' => 'required|email|max:200|unique:docente,correo,' . $docente->id_docente . ',id_docente',
+            'telefono' => 'nullable|string|max:30',
         ]);
 
         $docente->update([
-            'CORREO' => $request->CORREO,
-            'TELEFONO' => $request->TELEFONO
+            'correo' => $request->correo,
+            'telefono' => $request->telefono
         ]);
 
         return response()->json(['message' => 'Información actualizada correctamente.']);
@@ -184,11 +184,11 @@ class DocenteController extends Controller
 
         $usuario = $request->user();
 
-        if (!Hash::check($request->current_password, $usuario->PASSWORD_HASH)) {
+        if (!Hash::check($request->current_password, $usuario->password_hash)) {
             return response()->json(['message' => 'La contraseña actual es incorrecta.'], 400);
         }
 
-        $usuario->PASSWORD_HASH = Hash::make($request->new_password); 
+        $usuario->password_hash = Hash::make($request->new_password); 
         $usuario->save();
 
         return response()->json(['message' => 'Contraseña actualizada correctamente.']);
@@ -211,12 +211,12 @@ class DocenteController extends Controller
 
     if ($grupo) {
 
-        $nombreGrupo = $grupo->NOMBRE;
+        $nombreGrupo = $grupo->nombre;
 
         $alumnosCount = $grupo->alumnos->count();
         $conferenciasDelGrupo = $grupo->conferencias()
-            ->where('FECHA_HORA', '>=', now()) 
-            ->orderBy('FECHA_HORA', 'asc')
+            ->where('fecha_hora', '>=', now()) 
+            ->orderBy('fecha_hora', 'asc')
             ->with('ponente')
             ->get();
 
@@ -224,15 +224,15 @@ class DocenteController extends Controller
 
         $proximasConferencias = $conferenciasDelGrupo->map(function ($conferencia) {
             return [
-                'nombre' => $conferencia->NOMBRE_CONFERENCIA,
-                'fecha_hora' => $conferencia->FECHA_HORA,
-                'ponente' => $conferencia->ponente->NOMBRE ?? 'N/A'
+                'nombre' => $conferencia->nombre_conferencia,
+                'fecha_hora' => $conferencia->fecha_hora,
+                'ponente' => $conferencia->ponente->nombre ?? 'N/A'
             ];
         });
     }
 
     return response()->json([
-        'docente_nombre' => $docente->NOMBRE,   
+        'docente_nombre' => $docente->nombre,   
         'grupo_asignado' => $nombreGrupo,
         'alumnos_en_grupo' => $alumnosCount,
         'proximas_conferencias_count' => $conferenciasCount,

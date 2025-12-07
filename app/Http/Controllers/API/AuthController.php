@@ -15,13 +15,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'USERNAME' => 'required|string',
+            'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $usuario = Usuario::where('USERNAME', $request->USERNAME)->first();
+        $usuario = Usuario::where('username', $request->username)->first();
 
-        if (!$usuario || !Hash::check($request->password, $usuario->PASSWORD_HASH)) {
+        if (!$usuario || !Hash::check($request->password, $usuario->password_hash)) {
             return response()->json(['message' => 'Usuario o contraseña incorrectos.'], 401);
         }
 
@@ -48,7 +48,7 @@ class AuthController extends Controller
         }
 
         $usuario->update([
-            'PASSWORD_HASH' => \Illuminate\Support\Facades\Hash::make($request->password), 
+            'password_hash' => \Illuminate\Support\Facades\Hash::make($request->password), 
             'needs_password_change' => 0 
         ]);
 

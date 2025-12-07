@@ -11,7 +11,6 @@ return new class extends Migration
             $table->id('id_grupo');
             $table->string('nombre', 100);
 
-            // Un docente solo puede tener un grupo
             $table->foreignId('id_docente')
                   ->unique()
                   ->constrained('docente', 'id_docente')

@@ -9,21 +9,21 @@ class Ponente extends Model
 {
     use HasFactory;
 
-    protected $table = 'PONENTE';
-    protected $primaryKey = 'ID_PONENTE';
+    protected $table = 'ponente';
+    protected $primaryKey = 'id_ponente';
     public $timestamps = false;
 
     protected $fillable = [
-        'NOMBRE',
-        'TITULO',
-        'CARGO',
-        'EMPRESA',
-        'CORREO',
+        'nombre',
+        'titulo',
+        'cargo',
+        'empresa',
+        'correo',
     ];
 
     public function conferencias()
     {
     
-        return $this->hasMany(Conferencia::class, 'ID_PONENTE', 'ID_PONENTE');
+        return $this->hasMany(Conferencia::class, 'id_ponente', 'id_ponente');
     }
 }

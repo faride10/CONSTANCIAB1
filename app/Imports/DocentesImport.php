@@ -28,17 +28,17 @@ class DocentesImport implements
     {
        
         $docente = Docente::create([
-            'NOMBRE'   => $row['nombre_completo'],
-            'RFC'      => $row['rfc'],
+            'nombre'   => $row['nombre_completo'],
+            'rfc'      => $row['rfc'],
         ]);
 
         if ($docente) {
             Usuario::create([
-                'USERNAME'        => $row['rfc'],   
-                'PASSWORD_HASH'   => Hash::make($row['rfc']),   
-                'ID_ROL'          => 2,     
+                'username'        => $row['rfc'],   
+                'password_hash'   => Hash::make($row['rfc']),   
+                'id_rol'          => 2,     
                 'needs_password_change' => true,    
-                'ID_DOCENTE'      => $docente->ID_DOCENTE,  
+                'id_docente'      => $docente->id_docente,  
             ]);
         }
         

@@ -17,9 +17,9 @@ class GrupoController extends Controller
     {
        
         $validatedData = $request->validate([
-            'NOMBRE' => 'required|string|max:150',
-            'CARRERA' => 'nullable|string|max:150',
-            'ID_DOCENTE' => 'nullable|exists:docente,ID_DOCENTE' 
+            'nombre' => 'required|string|max:150',
+            'carrera' => 'nullable|string|max:150',
+            'id_docente' => 'nullable|exists:docente,id_docente' 
         ]);
         
         try {
@@ -39,9 +39,9 @@ class GrupoController extends Controller
     public function update(Request $request, Grupo $grupo)
     {
         $validatedData = $request->validate([
-            'NOMBRE' => 'sometimes|required|string|max:150',
-            'CARRERA' => 'sometimes|nullable|string|max:150',
-            'ID_DOCENTE' => 'sometimes|nullable|exists:docente,ID_DOCENTE'
+            'nombre' => 'sometimes|required|string|max:150',
+            'carrera' => 'sometimes|nullable|string|max:150',
+            'id_docente' => 'sometimes|nullable|exists:docente,id_docente'
         ]);
         
         try {
@@ -72,7 +72,7 @@ class GrupoController extends Controller
         return response()->json(['message' => 'Grupo no encontrado.'], 404);
     }
     
-    $docenteNombre = $grupo->docente ? $grupo->docente->NOMBRE : 'No Asignado';
+    $docenteNombre = $grupo->docente ? $grupo->docente->nombre : 'No Asignado';
 
     return response()->json([
         'docenteNombre' => $docenteNombre,

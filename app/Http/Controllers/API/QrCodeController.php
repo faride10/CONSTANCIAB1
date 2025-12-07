@@ -15,31 +15,31 @@ class QrCodeController extends Controller
 {
     public function generate(Conferencia $conferencia, Grupo $grupo)
     {
-        Log::info("Solicitud de QR para Conferencia ID: {$conferencia->ID_CONFERENCIA}, Grupo ID: {$grupo->ID_GRUPO}");
+        Log::info("Solicitud de QR para Conferencia ID: {$conferencia->id_conferencia}, Grupo ID: {$grupo->id_grupo}");
 
         if (!$grupo) {
             return response()->json(['message' => 'Grupo no encontrado.'], 404);
         }
 
         $qrCodeInternalData = [
-            'conference_id' => $conferencia->ID_CONFERENCIA,
-            'group_id'      => $grupo->ID_GRUPO,
+            'conference_id' => $conferencia->id_conferencia,
+            'group_id'      => $grupo->id_grupo,
         ];
 
         $qrDataString = json_encode($qrCodeInternalData);
         $formattedDate = 'N/A';
 
         try {
-            if ($conferencia->FECHA_HORA) {
-                $formattedDate = Carbon::parse($conferencia->FECHA_HORA)->format('d-m-Y H:i');
+            if ($conferencia->fecha_hora) {
+                $formattedDate = Carbon::parse($conferencia->fecha_hora)->format('d-m-Y H:i');
             }
         } catch (\Exception $e) {
-            Log::error("Error al formatear FECHA_HORA: " . $e->getMessage());
+            Log::error("Error al formatear fecha_hora: " . $e->getMessage());
         }
 
         $displayInfo = [
-            'conference_name' => $conferencia->NOMBRE_CONFERENCIA ?? 'Conferencia Sin Nombre',
-            'group_name'      => $grupo->NOMBRE ?? 'Grupo Sin Nombre',
+            'conference_name' => $conferencia->nombre_conferencia ?? 'Conferencia Sin Nombre',
+            'group_name'      => $grupo->nombre ?? 'Grupo Sin Nombre',
             'date'            => $formattedDate,
         ];
 
@@ -51,7 +51,6 @@ class QrCodeController extends Controller
     ->errorCorrection('H')
     ->generate($qrDataString);
 
-    // Y cambia el encabezado del base64:
     $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrPng);
 
 } catch (\Throwable $e) {

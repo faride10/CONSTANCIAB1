@@ -17,19 +17,19 @@ class PonenteController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'NOMBRE' => 'required|string|max:200',
-            'TITULO' => 'nullable|string|max:150',
-            'CARGO' => 'nullable|string|max:150',
-            'EMPRESA' => 'nullable|string|max:200',
-            'CORREO' => 'nullable|email|max:200'
+            'nombre' => 'required|string|max:200',
+            'titulo' => 'nullable|string|max:150',
+            'cargo' => 'nullable|string|max:150',
+            'empresa' => 'nullable|string|max:200',
+            'correo' => 'nullable|email|max:200'
         ]);
 
         try {
             $ponente = Ponente::create($validatedData);
             
             ActivityLog::create([
-                'tipo_accion' => 'DOCENTE',     
-                'descripcion' => 'El ponente "' . $ponente->NOMBRE . '" ha sido registrado.'
+                'tipo_accion' => 'docente',     
+                'descripcion' => 'El ponente "' . $ponente->nombre . '" ha sido registrado.'
             ]);
            
             return response()->json($ponente, 201); 
@@ -49,11 +49,11 @@ class PonenteController extends Controller
     public function update(Request $request, Ponente $ponente)
     {
         $request->validate([
-            'NOMBRE' => 'sometimes|required|string|max:2200',
-            'TITULO' => 'sometimes|nullable|string|max:150',
-            'CARGO' => 'sometimes|nullable|string|max:150',
-            'EMPRESA' => 'sometimes|nullable|string|max:200',
-            'CORREO' => 'sometimes|nullable|email|max:200',
+            'nombre' => 'sometimes|required|string|max:2200',
+            'titulo' => 'sometimes|nullable|string|max:150',
+            'cargo' => 'sometimes|nullable|string|max:150',
+            'empresa' => 'sometimes|nullable|string|max:200',
+            'correo' => 'sometimes|nullable|email|max:200',
         ]);
 
         $ponente->update($request->all());
@@ -67,7 +67,7 @@ class PonenteController extends Controller
             $ponente->delete(); 
             return response()->json(null, 204);
         } catch (\Exception $e) {
-            Log::error("Error al eliminar ponente ID {$ponente->ID_PONENTE}: " . $e->getMessage());
+            Log::error("Error al eliminar ponente ID {$ponente->id_ponente}: " . $e->getMessage());
             return response()->json(['message' => 'Error interno al eliminar el ponente.'], 500);
         }
     }

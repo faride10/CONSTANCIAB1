@@ -7,23 +7,23 @@ class Grupo extends Model
 {
     use HasFactory;
     protected $table = 'grupo';
-    protected $primaryKey = 'ID_GRUPO';
+    protected $primaryKey = 'id_grupo';
     public $timestamps = false;
 
     protected $fillable = [
-        'NOMBRE',
-        'CARRERA',
-        'ID_DOCENTE',
+        'nombre',
+        'carrera',
+        'id_docente',
     ];
 
     public function alumnos()
     {
-        return $this->hasMany(Alumno::class, 'ID_GRUPO', 'ID_GRUPO');
+        return $this->hasMany(Alumno::class, 'id_grupo', 'id_grupo');
     }
 
     public function docente()
     {
-        return $this->belongsTo(Docente::class, 'ID_DOCENTE', 'ID_DOCENTE');
+        return $this->belongsTo(Docente::class, 'id_docente', 'id_docente');
     }
 
     public function conferencias()
@@ -31,8 +31,8 @@ class Grupo extends Model
     return $this->belongsToMany(
         Conferencia::class,     
         'conferencia_grupo',    
-        'ID_GRUPO',     
-        'ID_CONFERENCIA'    
+        'id_grupo',     
+        'id_conferencia'    
     );
 }
 }

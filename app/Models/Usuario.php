@@ -11,20 +11,20 @@ class Usuario extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'USUARIO';
-    protected $primaryKey = 'ID_USUARIO';
+    protected $table = 'usuario';
+    protected $primaryKey = 'id_usuario';
     public $timestamps = false; 
 
     protected $fillable = [
-        'USERNAME',
-        'PASSWORD_HASH',
-        'ID_ROL',
-        'ID_DOCENTE', 
+        'username',
+        'password_hash',
+        'id_rol',
+        'id_docente', 
         'needs_password_change', 
     ];
 
     protected $hidden = [
-        'PASSWORD_HASH',
+        'password_hash',
     ];
 
     protected $casts = [
@@ -34,16 +34,16 @@ class Usuario extends Authenticatable
 
     public function getAuthPassword()
     {
-        return $this->PASSWORD_HASH;
+        return $this->password_hash;
     }
 
     public function rol()
     {
-        return $this->belongsTo(Rol::class, 'ID_ROL', 'ID_ROL');
+        return $this->belongsTo(Rol::class, 'id_rol', 'id_rol');
     }
 
     public function docente()
     {
-        return $this->belongsTo(Docente::class, 'ID_DOCENTE', 'ID_DOCENTE');
+        return $this->belongsTo(Docente::class, 'id_docente', 'id_docente');
     }
 }

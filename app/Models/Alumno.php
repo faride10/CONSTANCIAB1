@@ -10,26 +10,26 @@ class Alumno extends Model
     use HasFactory;
 
     protected $table = 'alumno';
-    protected $primaryKey = 'NUM_CONTROL';
+    protected $primaryKey = 'num_control';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
-        'NUM_CONTROL',
-        'NOMBRE',
-        'CORREO_INSTITUCIONAL',
-        'ID_GRUPO',
+        'num_control',
+        'nombre',
+        'correo_institucional',
+        'id_grupo',
     ];
 
     public function grupo()
     {
-        return $this->belongsTo(Grupo::class, 'ID_GRUPO', 'ID_GRUPO');
+        return $this->belongsTo(Grupo::class, 'id_grupo', 'id_grupo');
     }
 
     
     public function asistencias()
     {
-        return $this->hasMany(Asistencia::class, 'NUM_CONTROL', 'NUM_CONTROL');
+        return $this->hasMany(Asistencia::class, 'num_control', 'num_control');
     }
 }

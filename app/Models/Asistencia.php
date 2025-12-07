@@ -9,32 +9,32 @@ class Asistencia extends Model
 {
     use HasFactory;
 
-    protected $table = 'ASISTENCIA';    
-    protected $primaryKey = 'ID_ASISTENCIA';    
+    protected $table = 'asistencia';    
+    protected $primaryKey = 'id_asistencia';    
 
     public $timestamps = true; 
 
     protected $fillable = [
-        'ID_CONFERENCIA',
-        'NUM_CONTROL',
-        'FECHA_REGISTRO',     
-        'VERIFICATION_TOKEN',
-        'TOKEN_EXPIRES_AT',
-        'STATUS'
+        'id_conferencia',
+        'num_control',
+        'fecha_registro',     
+        'verification_token',
+        'token_expires_at',
+        'status'
     ];
 
     protected $casts = [
-        'TOKEN_EXPIRES_AT' => 'datetime',
-        'FECHA_REGISTRO' => 'datetime'
+        'token_expires_at' => 'datetime',
+        'fecha_registro' => 'datetime'
     ];
 
     public function conferencia()
     {
-        return $this->belongsTo(Conferencia::class, 'ID_CONFERENCIA', 'ID_CONFERENCIA');
+        return $this->belongsTo(Conferencia::class, 'id_conferencia', 'id_conferencia');
     }
 
     public function alumno()
     {
-        return $this->belongsTo(Alumno::class, 'NUM_CONTROL', 'NUM_CONTROL');
+        return $this->belongsTo(Alumno::class, 'num_control', 'num_control');
     }
 }
