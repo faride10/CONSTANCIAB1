@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\Asistencia;
 use App\Models\Alumno;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\AttendanceVerificationMail;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -27,11 +27,15 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Número de control no encontrado.'], 404);
         }
 
+        $conferencia = DB::table('conferencia')
+            ->where('id_conferencia', $request->conference_id)
+            ->first();
+
         $existingAttendance = Asistencia::where('id_conferencia', $request->conference_id)
                                 ->where('num_control', $request->control_number)
                                 ->first();
 
-        if ($existingAttendance && $existingAttendance->STATUS === 'confirmed') {
+        if ($existingAttendance && $existingAttendance->status === 'confirmed') {
             return response()->json(['message' => 'Ya has registrado tu asistencia previamente. ✅'], 400);
         }
 
@@ -41,35 +45,41 @@ class AttendanceController extends Controller
                 'num_control' => $request->control_number
             ],
             [
-                'verification_token' => null, 
-                'token_expires_at' => null,   
-                'status' => 'confirmed',    
+                'status' => 'confirmed',     
                 'fecha_registro' => now()
             ]
         );
 
+        if ($conferencia && isset($conferencia->id_docente)) {
+            DB::table('notifications')->insert([
+                'id' => Str::uuid(),
+                'type' => 'App\Notifications\AsistenciaAlumno',
+                'notifiable_type' => 'App\Models\User',
+                'notifiable_id' => $conferencia->id_docente, 
+                'data' => json_encode([
+                    'titulo' => 'Nueva Asistencia',
+                    'mensaje' => "El alumno {$alumno->nombre} registró asistencia en: {$conferencia->nombre_conferencia}",
+                    'tipo' => 'SUCCESS'
+                ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         return response()->json(['message' => '¡Tu asistencia ha sido registrada correctamente! ✅'], 200);
     }
 
-    public function confirmAttendance($token)
-    {
-        return response()->json(['message' => 'La confirmación por correo está desactivada.'], 404);
-    }
-
-     public function generateQr($id)
+    public function generateQr($id)
     {
         $frontendUrl = env('FRONTEND_URL');
-
         if (!$frontendUrl) {
-            Log::error('FRONTEND_URL no está definida en el archivo .env. No se puede generar el QR.');
-            return response()->json(['message' => 'Error de configuración del servidor. FRONTEND_URL no definida.'], 500);
+            return response()->json(['message' => 'Error de configuración.'], 500);
         }
 
         $url_destino = $frontendUrl . "/asistencia/" . $id;
 
         try {
             $qr = QrCode::size(300)->generate($url_destino);
-            
             return response()->json([
                 'qr_code' => (string) $qr,
                 'url_destino' => $url_destino

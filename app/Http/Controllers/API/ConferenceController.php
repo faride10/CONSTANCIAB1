@@ -7,43 +7,62 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Conferencia;
 use App\Models\Grupo; 
+use App\Models\PeriodoAcademico; 
+use App\Models\ActivityLog; 
 use Carbon\Carbon;
 
 class ConferenceController extends Controller
 {
+  
     public function index()
     {
-        return Conferencia::with('ponente', 'grupos')->get();
+        return Conferencia::with(['ponente', 'grupos', 'periodo', 'asistencias.alumno'])
+            ->withCount('asistencias') 
+            ->get();
     }
 
     public function store(Request $request)
-{
-    $validatedData = $request->validate([
-        'nombre_conferencia' => 'required|string|max:200',
-        'tema' => 'nullable|string|max:255',
-        'fecha_hora' => 'required|date',
-        'lugar' => 'required|string|max:150',
-        'num_participantes' => 'nullable|integer',
-        'id_ponente' => 'nullable|exists:ponente,id_ponente',
-        'grupos' => 'required|array',
-        'grupos.*' => 'integer|exists:grupo,id_grupo', 
-    ]);
+    {
+        $validatedData = $request->validate([
+            'nombre_conferencia' => 'required|string|max:200',
+            'tema' => 'nullable|string|max:255',
+            'fecha_hora' => 'required|date',
+            'lugar' => 'required|string|max:150',
+            'num_participantes' => 'nullable|integer',
+            'id_ponente' => 'nullable|exists:ponente,id_ponente',
+            'grupos' => 'required|array',
+            'grupos.*' => 'integer|exists:grupo,id_grupo', 
+        ]);
 
-    try {
-        $conferencia = Conferencia::create($validatedData);
+        try {
+            $periodoActivo = PeriodoAcademico::where('activo', true)->first();
+            
+            if (!$periodoActivo) {
+                return response()->json(['message' => 'No se puede crear la conferencia: No hay un periodo académico activo.'], 400);
+            }
 
-        if (!empty($validatedData['grupos'])) {
-            $conferencia->grupos()->attach($validatedData['grupos']);
+            $validatedData['periodo_id'] = $periodoActivo->id;
+            $validatedData['esta_archivado'] = false;
+
+            $conferencia = Conferencia::create($validatedData);
+
+            if (!empty($validatedData['grupos'])) {
+                $conferencia->grupos()->attach($validatedData['grupos']);
+            }
+
+            ActivityLog::create([
+                'tipo_accion' => 'conferencia',
+                'descripcion' => 'Nueva conferencia programada para el periodo ' . $periodoActivo->nombre . ': ' . $conferencia->nombre_conferencia
+            ]);
+
+            return response()->json($conferencia->load('grupos'), 201);
+
+        } catch (\Exception $e) {
+            \Log::error("Error al crear conferencia: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al guardar la conferencia.', 'details' => $e->getMessage()], 500);
         }
-
-        return response()->json($conferencia->load('grupos'), 201);
-
-    } catch (\Exception $e) {
-        \Log::error("Error al crear conferencia y asignar grupos: " . $e->getMessage());
-        return response()->json(['message' => 'Error interno al guardar la conferencia.', 'details' => $e->getMessage()], 500);
     }
-}
-    
+
     public function getPublicInfo($id)
     {
         $conferencia = Conferencia::where('id_conferencia', $id)->first();
@@ -59,16 +78,25 @@ class ConferenceController extends Controller
     public function destroy(Conferencia $conferencia)
     {
         try {
-       
             $conferencia->grupos()->detach();
             $conferencia->asistencias()->delete(); 
             $conferencia->delete();
-
             return response()->json(null, 204);
-
         } catch (\Exception $e) {
             \Log::error("Error eliminando conferencia: " . $e->getMessage());
-            return response()->json(['message' => 'Error interno al eliminar. Es posible que falten relaciones en el Modelo.', 'details' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Error interno al eliminar.', 'details' => $e->getMessage()], 500);
+        }
+    }
+
+    public function archivarPeriodo($periodo_id)
+    {
+        try {
+            Conferencia::where('periodo_id', $periodo_id)->update(['esta_archivado' => true]);
+            $conferenciasIds = Conferencia::where('periodo_id', $periodo_id)->pluck('id_conferencia');
+            \App\Models\Asistencia::whereIn('id_conferencia', $conferenciasIds)->update(['esta_archivado' => true]);
+            return response()->json(['message' => 'Periodo archivado correctamente.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al archivar periodo.', 'details' => $e->getMessage()], 500);
         }
     }
 }

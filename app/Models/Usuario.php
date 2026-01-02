@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notifiable; 
 use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Authenticatable
@@ -18,6 +18,8 @@ class Usuario extends Authenticatable
     protected $fillable = [
         'username',
         'password_hash',
+        'nombre',     
+        // 'email',   
         'id_rol',
         'id_docente', 
         'needs_password_change', 
@@ -25,11 +27,13 @@ class Usuario extends Authenticatable
 
     protected $hidden = [
         'password_hash',
+        'remember_token', 
     ];
 
     protected $casts = [
         'needs_password_change' => 'boolean', 
-  
+        'id_rol' => 'integer',
+        'id_docente' => 'integer'
     ];
 
     public function getAuthPassword()
@@ -45,5 +49,15 @@ class Usuario extends Authenticatable
     public function docente()
     {
         return $this->belongsTo(Docente::class, 'id_docente', 'id_docente');
+    }
+
+    public function getKey()
+    {
+        return $this->id_usuario;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'id_usuario';
     }
 }

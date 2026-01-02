@@ -15,8 +15,10 @@ use App\Http\Controllers\API\QrCodeController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\ReporteController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\API\PerfilController;
+use App\Http\Controllers\API\NotificationController;
 
-
+Route::post('/periodos/{id}/archivar', [ConferenceController::class, 'archivarPeriodo']);
 // Rutas públicas
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/conferencias/{conferencia}/grupos/{grupo}/qr-data', [QrCodeController::class, 'generate']);
@@ -24,7 +26,7 @@ Route::post('/attendance/request', [AttendanceController::class, 'requestAttenda
  Route::get('/attendance/confirm/{token}', [AttendanceController::class, 'confirmAttendance']);
  Route::get('/public/conferencia/{id}', [ConferenceController::class, 'getPublicInfo']);
 
-// Rutas protegidas (requieren Token)
+// Rutas protegidas (token)
 Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/user', function (Request $request) {
@@ -73,6 +75,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('admin/reporte/conferencia/{conferencia}/grupo/{grupo}', [ReporteController::class, 'getReportePorAlumnos']);
     Route::get('/conferencia/{id}/qr', [App\Http\Controllers\Api\AttendanceController::class, 'generateQr']);
 
-    
+    Route::get('/perfil', [PerfilController::class, 'show']);       
+    Route::put('/perfil/update', [PerfilController::class, 'update']); 
+    Route::put('/perfil/password', [PerfilController::class, 'changePassword']); 
 
+    Route::get('/notificaciones', [\App\Http\Controllers\API\NotificationController::class, 'index']);
+    Route::delete('/notificaciones/limpiar', [\App\Http\Controllers\API\NotificationController::class, 'clear']);
+
+    Route::get('conferencias/{conferencia}/grupos/{grupo}/reporte-pdf', [ConferenceController::class, 'generarReportePdf']);
 });

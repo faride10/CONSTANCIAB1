@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Imports\AlumnosImport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\ActivityLog; 
 
 class AlumnoController extends Controller
 {
@@ -27,7 +28,14 @@ class AlumnoController extends Controller
 
         try {
             $alumno = Alumno::create($validatedData);
+
+            ActivityLog::create([
+                'tipo_accion' => 'alumno',
+                'descripcion' => 'El alumno ' . $alumno->nombre . ' se ha registrado.'
+            ]);
+
             return response()->json($alumno->load('grupo'), 201);
+
         } catch (\Exception $e) {
             Log::error("Error al crear alumno: " . $e->getMessage());
             return response()->json(['message' => 'Error interno al guardar el alumno.'], 500);
@@ -83,23 +91,23 @@ class AlumnoController extends Controller
     }
     
     public function importar(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|file|mimes:csv,xlsx'
-    ]);
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:csv,xlsx'
+        ]);
 
-    try {
-                $file = $request->file('archivo');
+        try {
+            $file = $request->file('archivo');
 
-        Excel::import(new AlumnosImport, $file);
+            Excel::import(new AlumnosImport, $file);
 
-        return response()->json(['message' => 'Importación completada con éxito.'], 200);
+            return response()->json(['message' => 'Importación completada con éxito.'], 200);
 
-    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-        return response()->json(['message' => 'La importación falló.', 'errors' => $e->failures()], 422);
-    } catch (\Exception $e) {
-        Log::error("Error al importar alumnos: " . $e->getMessage());
-        return response()->json(['message' => 'Error interno al importar el archivo.'], 500);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            return response()->json(['message' => 'La importación falló.', 'errors' => $e->failures()], 422);
+        } catch (\Exception $e) {
+            Log::error("Error al importar alumnos: " . $e->getMessage());
+            return response()->json(['message' => 'Error interno al importar el archivo.'], 500);
+        }
     }
-}
 }

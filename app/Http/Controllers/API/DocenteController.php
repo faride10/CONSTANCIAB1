@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Imports\DocentesImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog; 
 
 class DocenteController extends Controller
 {
@@ -31,14 +32,18 @@ class DocenteController extends Controller
 
         try { 
             $docente = Docente::create($validatedData);
-
             $usuario = new Usuario();
-            $usuario->username = $docente->RFC; 
+            $usuario->username = $docente->rfc; 
             $usuario->password_hash = Hash::make($docente->rfc); 
             $usuario->id_rol = 2; 
             $usuario->needs_password_change = true; 
             $usuario->id_docente = $docente->id_docente; 
             $usuario->save();
+
+            ActivityLog::create([
+                'tipo_accion' => 'docente',
+                'descripcion' => 'El docente "' . $docente->nombre . '" ha sido registrado.'
+            ]);
 
             return response()->json($docente->load('usuario'), 201);
 
@@ -195,49 +200,49 @@ class DocenteController extends Controller
     }
 
     public function getDashboardSummary(Request $request)
-{
-    $usuario = $request->user();
-    $docente = $usuario->docente; 
+    {
+        $usuario = $request->user();
+        $docente = $usuario->docente; 
 
-    if (!$docente) {
-        return response()->json(['message' => 'Perfil de docente no encontrado.'], 404);
+        if (!$docente) {
+            return response()->json(['message' => 'Perfil de docente no encontrado.'], 404);
+        }
+
+        $grupo = $docente->grupo;
+        $alumnosCount = 0;
+        $proximasConferencias = [];
+        $conferenciasCount = 0;
+        $nombreGrupo = 'Sin Grupo';
+
+        if ($grupo) {
+
+            $nombreGrupo = $grupo->nombre;
+
+            $alumnosCount = $grupo->alumnos->count();
+            $conferenciasDelGrupo = $grupo->conferencias()
+                ->where('fecha_hora', '>=', now()) 
+                ->orderBy('fecha_hora', 'asc')
+                ->with('ponente')
+                ->get();
+
+            $conferenciasCount = $conferenciasDelGrupo->count();
+
+            $proximasConferencias = $conferenciasDelGrupo->map(function ($conferencia) {
+                return [
+                    'nombre' => $conferencia->nombre_conferencia,
+                    'fecha_hora' => $conferencia->fecha_hora,
+                    'ponente' => $conferencia->ponente->nombre ?? 'N/A'
+                ];
+            });
+        }
+
+        return response()->json([
+            'docente_nombre' => $docente->nombre,   
+            'grupo_asignado' => $nombreGrupo,
+            'alumnos_en_grupo' => $alumnosCount,
+            'proximas_conferencias_count' => $conferenciasCount,
+            'constancias_pendientes' => 0,
+            'lista_proximas_conferencias' => $proximasConferencias
+        ]);
     }
-
-    $grupo = $docente->grupo;
-    $alumnosCount = 0;
-    $proximasConferencias = [];
-    $conferenciasCount = 0;
-    $nombreGrupo = 'Sin Grupo';
-
-    if ($grupo) {
-
-        $nombreGrupo = $grupo->nombre;
-
-        $alumnosCount = $grupo->alumnos->count();
-        $conferenciasDelGrupo = $grupo->conferencias()
-            ->where('fecha_hora', '>=', now()) 
-            ->orderBy('fecha_hora', 'asc')
-            ->with('ponente')
-            ->get();
-
-        $conferenciasCount = $conferenciasDelGrupo->count();
-
-        $proximasConferencias = $conferenciasDelGrupo->map(function ($conferencia) {
-            return [
-                'nombre' => $conferencia->nombre_conferencia,
-                'fecha_hora' => $conferencia->fecha_hora,
-                'ponente' => $conferencia->ponente->nombre ?? 'N/A'
-            ];
-        });
-    }
-
-    return response()->json([
-        'docente_nombre' => $docente->nombre,   
-        'grupo_asignado' => $nombreGrupo,
-        'alumnos_en_grupo' => $alumnosCount,
-        'proximas_conferencias_count' => $conferenciasCount,
-        'constancias_pendientes' => 0,
-        'lista_proximas_conferencias' => $proximasConferencias
-    ]);
-}
 }

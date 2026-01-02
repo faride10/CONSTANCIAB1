@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\API; 
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Usuario;
+use App\Models\Usuario; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
+use App\Notifications\SystemNotification;
 
 class AuthController extends Controller
 {
@@ -27,6 +28,7 @@ class AuthController extends Controller
 
         $usuario->load('rol', 'docente');
         $token = $usuario->createToken('auth_token')->plainTextToken;
+        
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -34,28 +36,47 @@ class AuthController extends Controller
         ]);
     }
 
-   public function changePassword(Request $request)
-{
-    try {
-        $request->validate([
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+    public function changePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'password' => ['required', 'confirmed', 'min:8'],
+            ]);
 
-        $usuario = $request->user(); 
+            $usuario = $request->user(); 
 
-        if (!$usuario) {
-             return response()->json(['message' => 'Token de autenticación no válido.'], 401); 
-        }
+            if (!$usuario) {
+                 return response()->json(['message' => 'Token de autenticación no válido.'], 401); 
+            }
 
-        $usuario->update([
-            'password_hash' => \Illuminate\Support\Facades\Hash::make($request->password), 
-            'needs_password_change' => 0 
-        ]);
+            $esActivacionCuenta = ((int)$usuario->needs_password_change === 1);
+            
+            \Log::info("Intento de cambio de clave. ¿Es activación?: " . ($esActivacionCuenta ? 'SI' : 'NO'));
 
-        return response()->json(['message' => 'Contraseña actualizada exitosamente.', 'redirect_to' => '/panel/docente'], 200);
+            $usuario->update([
+                'password_hash' => Hash::make($request->password), 
+                'needs_password_change' => 0 
+            ]);
+
+            if ($esActivacionCuenta) {
+            $admin = \App\Models\Usuario::where('id_usuario', 1)->first(); 
         
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+            if ($admin) {
+            $admin->notify(new \App\Notifications\SystemNotification(
+                'Docente Activo',                           
+                "El docente {$usuario->username} activo su cuenta.", 
+                'EXITO'    
+            ));
+        }
     }
-}
+
+            return response()->json([
+                'message' => 'Contraseña actualizada exitosamente.', 
+                'redirect_to' => '/panel/docente'
+            ], 200);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        }
+    }
 }

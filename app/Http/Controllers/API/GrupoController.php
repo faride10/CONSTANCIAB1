@@ -1,9 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\API;
+
 use App\Http\Controllers\Controller;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; 
+use App\Models\ActivityLog; 
 
 class GrupoController extends Controller
 {
@@ -15,7 +18,6 @@ class GrupoController extends Controller
 
     public function store(Request $request)
     {
-       
         $validatedData = $request->validate([
             'nombre' => 'required|string|max:150',
             'carrera' => 'nullable|string|max:150',
@@ -24,7 +26,14 @@ class GrupoController extends Controller
         
         try {
             $grupo = Grupo::create($validatedData);
+
+            ActivityLog::create([
+                'tipo_accion' => 'grupo',
+                'descripcion' => 'Se ha creado el grupo ' . $grupo->nombre . ' (' . $grupo->carrera . ')'
+            ]);
+
             return response()->json($grupo->load('docente'), 201);
+
         } catch (\Exception $e) {
             Log::error("Error al crear grupo: " . $e->getMessage());
             return response()->json(['message' => 'Error interno al guardar el grupo.'], 500);
@@ -65,17 +74,17 @@ class GrupoController extends Controller
     }
 
     public function getDocenteByGroupId($id)
-{
-    $grupo = \App\Models\Grupo::with('docente')->find($id);
+    {
+        $grupo = \App\Models\Grupo::with('docente')->find($id);
 
-    if (!$grupo) {
-        return response()->json(['message' => 'Grupo no encontrado.'], 404);
+        if (!$grupo) {
+            return response()->json(['message' => 'Grupo no encontrado.'], 404);
+        }
+        
+        $docenteNombre = $grupo->docente ? $grupo->docente->nombre : 'No Asignado';
+
+        return response()->json([
+            'docenteNombre' => $docenteNombre,
+        ]);
     }
-    
-    $docenteNombre = $grupo->docente ? $grupo->docente->nombre : 'No Asignado';
-
-    return response()->json([
-        'docenteNombre' => $docenteNombre,
-    ]);
-}
 }

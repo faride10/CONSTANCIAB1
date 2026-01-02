@@ -44,10 +44,10 @@ class AsistenciaController extends Controller
 
         $user = $request->user(); 
 
-        if ($user->ID_ROL == 1) {
+        if ($user->id_rol == 1) {
 
         } else if ($user->id_rol == 2 && $user->docente) {
-            if ($user->docente->ID_GRUPO != $validated['id_grupo']) {
+            if ($user->docente->id_grupo != $validated['id_grupo']) {
                 return response()->json(['message' => 'No tienes permiso para registrar asistencia en este grupo.'], 403);
             }
         } else {

@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Conferencia;
 use App\Models\Alumno;
 use App\Models\Docente;
-use App\Models\Constancia;
 use App\Models\ActivityLog;
 
 class DashboardController extends Controller
@@ -15,28 +14,27 @@ class DashboardController extends Controller
     
     public function adminSummary(Request $request)
     {
-        
         $activeConferences = Conferencia::count();
         $registeredStudents = Alumno::count();
         $activeTeachers = Docente::count();
-        $issuedCertificates = Constancia::count();
-
+        
         return response()->json([
             'active_conferences' => $activeConferences,
             'registered_students' => $registeredStudents,
             'active_teachers' => $activeTeachers,
-            'issued_certificates' => $issuedCertificates,
         ]);
     }
-    public function getRecentActivities()
-{
-    $actividades = ActivityLog::orderBy('created_at', 'desc') 
-    ->limit(5) 
-    ->get();
 
-    return response()->json($actividades);
-}
-public function getMiGrupo(Request $request)
+    public function getRecentActivities()
+    {
+        $actividades = ActivityLog::orderBy('created_at', 'desc') 
+        ->limit(5) 
+        ->get();
+
+        return response()->json($actividades);
+    }
+
+    public function getMiGrupo(Request $request)
     {
         $usuario = $request->user();
 
